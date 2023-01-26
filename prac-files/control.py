@@ -29,7 +29,7 @@ try:
 
     left_motor = BP.PORT_A
     right_motor = BP.PORT_D
-    power = 15
+    power = 5
 
     BP.set_motor_power(BP.PORT_A, power)
     BP.set_motor_power(BP.PORT_D, power)
@@ -41,8 +41,8 @@ try:
             print(error)
     
 
-        BP.set_motor_position(left_motor, 200)
-        BP.set_motor_position(right_motor, 200)
+        BP.set_motor_position(left_motor, 500)
+        BP.set_motor_position(right_motor, 500)
 
 
         time.sleep(3)
