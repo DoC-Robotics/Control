@@ -7,7 +7,7 @@ import time
 
 BP = brickpi3.BrickPi3() # Create an instance of the BrickPi3 class. BP will be the BrickPi3 object.
 # range of speeds to test
-speeds = [15, 20, 25, 30, 35]
+speeds = [10, 11, 12, 13, 14]
 try:
     for speed in speeds:
         print("current speed is: ", speed)
