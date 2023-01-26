@@ -33,6 +33,7 @@ try:
 
     BP.set_motor_power(BP.PORT_A, power)
     BP.set_motor_power(BP.PORT_D, power)
+    BP.set_motor_limits(BP.PORT A, power*0.7, 40):
     while True:
         try:
             BP.offset_motor_encoder(BP.PORT_A, BP.get_motor_encoder(BP.PORT_A)) # reset encoder A
