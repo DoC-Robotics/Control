@@ -31,21 +31,28 @@ try:
     right_motor = BP.PORT_D
     power = 50
 
-    BP.set_motor_power(BP.PORT_A, power)
-    BP.set_motor_power(BP.PORT_D, power)
-    BP.offset_motor_encoder(left_motor, BP.get_motor_encoder(left_motor))
-    BP.offset_motor_encoder(right_motor, BP.get_motor_encoder(right_motor))
+    while True:
+        BP.set_motor_power(BP.PORT_A, power)
+        BP.set_motor_power(BP.PORT_D, power)
+        try:
+            BP.offset_motor_encoder(BP.PORT_A, BP.get_motor_encoder(BP.PORT_A)) # reset encoder A
+            BP.offset_motor_encoder(BP.PORT_D, BP.get_motor_encoder(BP.PORT_D)) # reset encoder D
+        except IOError as error:
+            print(error)
+    
 
-    BP.set_motor_position(left_motor, 40)
-    BP.set_motor_position(right_motor, 40)
+        BP.set_motor_position(left_motor, 40)
+        BP.set_motor_position(right_motor, 40)
 
+        try:
+            BP.offset_motor_encoder(BP.PORT_A, BP.get_motor_encoder(BP.PORT_A)) # reset encoder A
+            BP.offset_motor_encoder(BP.PORT_D, BP.get_motor_encoder(BP.PORT_D)) # reset encoder D
+        except IOError as error:
+            print(error)
+        BP.set_motor_position(left_motor, -90)
+        BP.set_motor_position(right_motor, 90)
 
-    BP.offset_motor_encoder(left_motor, BP.get_motor_encoder(left_motor))
-    BP.offset_motor_encoder(right_motor, BP.get_motor_encoder(right_motor))
-    BP.set_motor_position(left_motor, -90)
-    BP.set_motor_position(right_motor, 90)
-
-    time.sleep(1)
+        time.sleep(1)
     # rotate 90 degrees
     # BP.set_motor_power(BP.PORT_A, 0)
     # BP.set_motor_power(BP.PORT_D, 20)
@@ -55,11 +62,4 @@ try:
 
 except KeyboardInterrupt:
     BP.reset_all()
-    break
 
-print(("Motor A Target power: %d" % power), "  Motor A Status: ", BP.get_motor_status(BP.PORT_A))
-
-time.sleep(0.02)  # delay for 0.02 seconds (20ms) to reduce the Raspberry Pi CPU load.
-
-except KeyboardInterrupt: # except the program gets interrupted by Ctrl+C on the keyboard.
-    BP.reset_all()        # Unconfigure the sensors, disable the motors, and restore the LED to the control of the BrickPi3 firmware.
