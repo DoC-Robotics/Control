@@ -31,9 +31,9 @@ try:
     right_motor = BP.PORT_D
     power = 15
 
+    BP.set_motor_power(BP.PORT_A, power)
+    BP.set_motor_power(BP.PORT_D, power)
     while True:
-        BP.set_motor_power(BP.PORT_A, power)
-        BP.set_motor_power(BP.PORT_D, power)
         try:
             BP.offset_motor_encoder(BP.PORT_A, BP.get_motor_encoder(BP.PORT_A)) # reset encoder A
             BP.offset_motor_encoder(BP.PORT_D, BP.get_motor_encoder(BP.PORT_D)) # reset encoder D
@@ -44,6 +44,9 @@ try:
         BP.set_motor_position(left_motor, 200)
         BP.set_motor_position(right_motor, 200)
 
+
+        time.sleep(3)
+
         try:
             BP.offset_motor_encoder(BP.PORT_A, BP.get_motor_encoder(BP.PORT_A)) # reset encoder A
             BP.offset_motor_encoder(BP.PORT_D, BP.get_motor_encoder(BP.PORT_D)) # reset encoder D
@@ -52,7 +55,7 @@ try:
         BP.set_motor_position(left_motor, -180)
         BP.set_motor_position(right_motor, 180)
 
-        time.sleep(1)
+        time.sleep(3)
     # rotate 90 degrees
     # BP.set_motor_power(BP.PORT_A, 0)
     # BP.set_motor_power(BP.PORT_D, 20)
