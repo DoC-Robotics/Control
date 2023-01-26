@@ -29,7 +29,7 @@ try:
 
     left_motor = BP.PORT_A
     right_motor = BP.PORT_D
-    power = 50
+    power = 15
 
     while True:
         BP.set_motor_power(BP.PORT_A, power)
@@ -41,16 +41,16 @@ try:
             print(error)
     
 
-        BP.set_motor_position(left_motor, 40)
-        BP.set_motor_position(right_motor, 40)
+        BP.set_motor_position(left_motor, 200)
+        BP.set_motor_position(right_motor, 200)
 
         try:
             BP.offset_motor_encoder(BP.PORT_A, BP.get_motor_encoder(BP.PORT_A)) # reset encoder A
             BP.offset_motor_encoder(BP.PORT_D, BP.get_motor_encoder(BP.PORT_D)) # reset encoder D
         except IOError as error:
             print(error)
-        BP.set_motor_position(left_motor, -90)
-        BP.set_motor_position(right_motor, 90)
+        BP.set_motor_position(left_motor, -180)
+        BP.set_motor_position(right_motor, 180)
 
         time.sleep(1)
     # rotate 90 degrees
