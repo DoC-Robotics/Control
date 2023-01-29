@@ -1,21 +1,5 @@
 # """" Question 6.3 """"
 
-
-#!/usr/bin/env python
-#
-# https://www.dexterindustries.com/BrickPi/
-# https://github.com/DexterInd/BrickPi3
-#
-# Copyright (c) 2016 Dexter Industries
-# Released under the MIT license (http://choosealicense.com/licenses/mit/).
-# For more information, see https://github.com/DexterInd/BrickPi3/blob/master/LICENSE.md
-#
-# This code is an example for running a motor to a target position set by the encoder of another motor.
-#
-# Hardware: Connect EV3 or NXT motors to the BrickPi3 motor ports A and D. Make sure that the BrickPi3 is running on a 9v power supply.
-#
-# Results:  When you run this program, motor A power will be controlled by the position of motor D. Manually rotate motor B, and motor C's power will change.
-
 # use python 3 syntax but make it compatible with python 2
 from __future__ import print_function
 from __future__ import division  # ''
@@ -36,31 +20,50 @@ try:
     except IOError as error:
         print(error)
 
-    left_motor = BP.PORT_A
-    right_motor = BP.PORT_D
-    power = 5
+    left_motor = BP.PORT_B
+    right_motor = BP.PORT_C
 
-    BP.set_motor_power(BP.PORT_A + BP.PORT_D, power)
-    # BP.set_motor_power(BP.PORT_D, power)
-    BP.set_motor_limits(BP.PORT A , power*0.7, 40)
+    ###### HYPERPARAMETERS ######
+    power_straight = 14  
+    pow_dif = 1
+    duration_straight = 7 # for 40cm 5 s with power 14
+    power_rotation = 9 
+    duration_rotation = 5.5 # for 90 degrees 4.5 s with power 8
+    stop_duration = 2
+    ######                 ######
 
-    while True:
+    sides = 4
+    squares = 1 #10
+    i = 1
 
-        BP.set_motor_position(left_motor + right_motor, 500)
-        # BP.set_motor_position(right_motor, 500)
+    while i <= sides*squares:
 
-        time.sleep(3)
+        print("Iteration: ", i, ", square nb: ", int(i/4), ", square side: ", i%4)
 
-        BP.set_motor_position(left_motor, -180)
-        BP.set_motor_position(right_motor, 180)
+        # go straight on each side
+        # BP.set_motor_power(left_motor + right_motor, power_straight)
+        # time.sleep(0.1)
+        BP.set_motor_power(left_motor, power_straight)
+        BP.set_motor_power(right_motor, power_straight-pow_dif)
+        time.sleep(duration_straight)
+        BP.set_motor_power(left_motor + right_motor, 0)
+        time.sleep(stop_duration)
+        print("after straight:  Motor left(A) Status: ", BP.get_motor_status(BP.PORT_A), "Motor right(D) Status: ", BP.get_motor_status(BP.PORT_D))
 
-        time.sleep(3)
-    # rotate 90 degrees
-    # BP.set_motor_power(BP.PORT_A + BP.PORT_D, 0)
-    # BP.set_motor_power(BP.PORT_D, 20)
-    # time.sleep(0.5)
-    # BP.set_motor_power(BP.PORT_A + BP.PORT_D, 0)
-    # BP.set_motor_power(BP.PORT_D, 0)
+        # turn 90 degrees towards left
+        if i % 2 == 0:
+            BP.set_motor_power(left_motor, -power_rotation)
+            BP.set_motor_power(right_motor, power_rotation)
+        else:
+            BP.set_motor_power(right_motor, power_rotation)
+            BP.set_motor_power(left_motor, -power_rotation)
+        time.sleep(duration_rotation)
+        BP.set_motor_power(left_motor + right_motor, 0)
+        time.sleep(stop_duration)
+        print("after rotation:  Motor left(A) Status: ", BP.get_motor_status(BP.PORT_A), "Motor right(D) Status: ", BP.get_motor_status(BP.PORT_D))
+
+        i = i+1
+
 
 except KeyboardInterrupt:
     BP.reset_all()

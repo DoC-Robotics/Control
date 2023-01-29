@@ -5,24 +5,32 @@ from __future__ import division
 import brickpi3  # import the BrickPi3 drivers
 import time
 
-rot_param = [5, 10, 15, 20, 25]  # isolate where which power range is right
+BP = brickpi3.BrickPi3()
+# rot_param = [5, 10, 15, 20, 25]  # isolate where which power range is right
+power_rotation = 8  # isolate where which power range is right
+duration_rotation = [4.8, 4.9, 5]
+left_motor = BP.PORT_B
+right_motor = BP.PORT_C
+
 BP = brickpi3.BrickPi3()
 try:
     try:
         BP.offset_motor_encoder(
-            BP.PORT_A, BP.get_motor_encoder(BP.PORT_A))  # reset encoder A
+            left_motor, BP.get_motor_encoder(left_motor))  # reset encoder A
         BP.offset_motor_encoder(
-            BP.PORT_D, BP.get_motor_encoder(BP.PORT_D))  # reset encoder D
+            right_motor, BP.get_motor_encoder(right_motor))  # reset encoder D
     except IOError as error:
         print(error)
 
-    for entry in rot_param:
-        BP.set_motor_power(BP.PORT_A, entry)
-        BP.set_motor_power(BP.PORT_D, -entry)
-        time.sleep(6)
-        BP.set_motor_power(BP.PORT_A + BP.PORT_D, 0)
-        # BP.set_motor_power(BP.PORT_A, 0)
-        time.sleep(3)
+    mode = 0
+
+    for entry in duration_rotation:
+        print("current rotation speed is: ", power_rotation, " with duration: ", entry)
+        BP.set_motor_power(left_motor, power_rotation)
+        BP.set_motor_power(right_motor, -power_rotation)
+        time.sleep(entry)
+        BP.set_motor_power(left_motor + right_motor, 0)
+        time.sleep(7)
 
 except KeyboardInterrupt:
     BP.reset_all()
