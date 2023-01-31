@@ -13,10 +13,8 @@ BP = brickpi3.BrickPi3()
 # The following BP.get_motor_encoder function returns the encoder value (what we want to use to control motor C's power).
 try:
     try:
-        BP.offset_motor_encoder(
-            BP.PORT_A, BP.get_motor_encoder(BP.PORT_A))  # reset encoder A
-        BP.offset_motor_encoder(
-            BP.PORT_D, BP.get_motor_encoder(BP.PORT_D))  # reset encoder D
+        BP.offset_motor_encoder(BP.PORT_B, BP.get_motor_encoder(BP.PORT_B))  # reset encoder A
+        BP.offset_motor_encoder(BP.PORT_C, BP.get_motor_encoder(BP.PORT_C))  # reset encoder D
     except IOError as error:
         print(error)
 
@@ -32,32 +30,41 @@ try:
     stop_duration = 2
     ######                 ######
 
+    ###### HYPERPARAMETERS ######
+    distance_straight = 640
+    distance_rotation = 230
+    ######                 ######
+
     sides = 4
     squares = 1 #10
     i = 1
+
+    BP.set_motor_limits(left_motor, 50, 200)          # set a power limit (in percent) and a speed limit (in Degrees Per Second)
+    BP.set_motor_limits(right_motor, 50, 200)
 
     while i <= sides*squares:
 
         print("Iteration: ", i, ", square nb: ", int(i/4), ", square side: ", i%4)
 
         # go straight on each side
-        # BP.set_motor_power(left_motor + right_motor, power_straight)
-        # time.sleep(0.1)
-        BP.set_motor_power(left_motor, power_straight)
-        BP.set_motor_power(right_motor, power_straight-pow_dif)
-        time.sleep(duration_straight)
+        # BP.set_motor_power(left_motor, power_straight)
+        # BP.set_motor_power(right_motor, power_straight-pow_dif)
+        # time.sleep(duration_straight)
+        BP.set_motor_position(left_motor + right_motor, distance_straight)
         BP.set_motor_power(left_motor + right_motor, 0)
         time.sleep(stop_duration)
         print("after straight:  Motor left(A) Status: ", BP.get_motor_status(BP.PORT_A), "Motor right(D) Status: ", BP.get_motor_status(BP.PORT_D))
 
         # turn 90 degrees towards left
-        if i % 2 == 0:
-            BP.set_motor_power(left_motor, -power_rotation)
-            BP.set_motor_power(right_motor, power_rotation)
-        else:
-            BP.set_motor_power(right_motor, power_rotation)
-            BP.set_motor_power(left_motor, -power_rotation)
-        time.sleep(duration_rotation)
+        BP.set_motor_position(left_motor, -distance_rotation)
+        BP.set_motor_position(right_motor, distance_rotation)
+        # if i % 2 == 0:
+        #     BP.set_motor_power(left_motor, -power_rotation)
+        #     BP.set_motor_power(right_motor, power_rotation)
+        # else:
+        #     BP.set_motor_power(right_motor, power_rotation)
+        #     BP.set_motor_power(left_motor, -power_rotation)
+        # time.sleep(duration_rotation)
         BP.set_motor_power(left_motor + right_motor, 0)
         time.sleep(stop_duration)
         print("after rotation:  Motor left(A) Status: ", BP.get_motor_status(BP.PORT_A), "Motor right(D) Status: ", BP.get_motor_status(BP.PORT_D))

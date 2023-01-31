@@ -23,23 +23,23 @@ BP = brickpi3.BrickPi3() # Create an instance of the BrickPi3 class. BP will be 
 
 try:
     try:
-        BP.offset_motor_encoder(BP.PORT_A, BP.get_motor_encoder(BP.PORT_A)) # reset encoder A
-        BP.offset_motor_encoder(BP.PORT_D, BP.get_motor_encoder(BP.PORT_D)) # reset encoder D
+        BP.offset_motor_encoder(BP.PORT_B, BP.get_motor_encoder(BP.PORT_B)) # reset encoder A
+        BP.offset_motor_encoder(BP.PORT_C, BP.get_motor_encoder(BP.PORT_C)) # reset encoder D
     except IOError as error:
         print(error)
     
-    BP.set_motor_power(BP.PORT_D, BP.MOTOR_FLOAT)                          # float motor D
-    #BP.set_motor_limits(BP.PORT_A, 50)                                     # optionally set a power limit
+    BP.set_motor_power(BP.PORT_C, BP.MOTOR_FLOAT)                          # float motor D
+    #BP.set_motor_limits(BP.PORT_B, 50)                                     # optionally set a power limit
     while True:
         # The following BP.get_motor_encoder function returns the encoder value
         try:
-            target = BP.get_motor_encoder(BP.PORT_D)     # read motor D's position
+            target = BP.get_motor_encoder(BP.PORT_C)     # read motor D's position
         except IOError as error:
             print(error)
         
-        BP.set_motor_dps(BP.PORT_A, target)             # set the target speed for motor A in Degrees Per Second
+        BP.set_motor_dps(BP.PORT_B, target)             # set the target speed for motor A in Degrees Per Second
         
-        print(("Motor A Target Degrees Per Second: %d" % target), "  Motor A Status: ", BP.get_motor_status(BP.PORT_A))
+        print(("Motor A Target Degrees Per Second: %d" % target), "  Motor A Status: ", BP.get_motor_status(BP.PORT_B))
         
         time.sleep(0.02)
 
