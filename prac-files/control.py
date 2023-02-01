@@ -33,6 +33,8 @@ try:
     ###### HYPERPARAMETERS ######
     distance_straight = 640
     distance_rotation = 230
+    current_position_left = 0   #initial position
+    current_position_right = 0  #initial position
     ######                 ######
 
     sides = 4
@@ -50,14 +52,24 @@ try:
         # BP.set_motor_power(left_motor, power_straight)
         # BP.set_motor_power(right_motor, power_straight-pow_dif)
         # time.sleep(duration_straight)
-        BP.set_motor_position(left_motor + right_motor, distance_straight)
-        BP.set_motor_power(left_motor + right_motor, 0)
+        current_position_left = current_position_left + distance_straight
+        current_position_right = current_position_left + distance_straight
+        BP.set_motor_position(left_motor + right_motor, current_position_left) # current_position_left = current_position_right
+
+        # BP.set_motor_power(left_motor + right_motor, 0)
         time.sleep(stop_duration)
         print("after straight:  Motor left(A) Status: ", BP.get_motor_status(BP.PORT_A), "Motor right(D) Status: ", BP.get_motor_status(BP.PORT_D))
 
         # turn 90 degrees towards left
-        BP.set_motor_position(left_motor, -distance_rotation)
-        BP.set_motor_position(right_motor, distance_rotation)
+        current_position_left = current_position_left - distance_rotation
+        current_position_right = current_position_left + distance_rotation
+        if i % 2 == 0:
+            BP.set_motor_position(left_motor, current_position_left)
+            BP.set_motor_position(right_motor, current_position_right)
+        else:
+            BP.set_motor_position(right_motor, current_position_right)
+            BP.set_motor_position(left_motor, current_position_left)
+
         # if i % 2 == 0:
         #     BP.set_motor_power(left_motor, -power_rotation)
         #     BP.set_motor_power(right_motor, power_rotation)
@@ -65,7 +77,7 @@ try:
         #     BP.set_motor_power(right_motor, power_rotation)
         #     BP.set_motor_power(left_motor, -power_rotation)
         # time.sleep(duration_rotation)
-        BP.set_motor_power(left_motor + right_motor, 0)
+        # BP.set_motor_power(left_motor + right_motor, 0)
         time.sleep(stop_duration)
         print("after rotation:  Motor left(A) Status: ", BP.get_motor_status(BP.PORT_A), "Motor right(D) Status: ", BP.get_motor_status(BP.PORT_D))
 
