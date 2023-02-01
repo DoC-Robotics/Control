@@ -45,8 +45,9 @@ if __name__=='__main__':
     # print("James Output:",covariace_two(measured_array))
 
 
-# 
+    print("square root x: ", 0.72888889 ** (1/2))
 
+    print("square root y: ", 0.49377778** (1/2))
 
 
 # print("correct code: ", np.cov([[10,10],[20,10],[15,20],[40,30],[10,10],[10,10],[20,10],[15,20],[40,30],[30,10]], rowvar=False))
