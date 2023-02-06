@@ -28,7 +28,7 @@ try:
     rotate_duration = 3
     reverse_duration = 2
     wait_duration = 2
-    straight_speed = 100
+    straight_speed = 200
     distance_rotation = 220 
     ######                 ######
 
@@ -48,7 +48,7 @@ try:
             
             if (bumperLEFTState or bumperRIGHTState):
                 
-                time.sleep(wait_duration)
+                # time.sleep(wait_duration)
                 BP.set_motor_dps(left_motor + right_motor, -straight_speed)
                 time.sleep(reverse_duration)
                 BP.set_motor_dps(left_motor + right_motor, 0)
@@ -59,12 +59,12 @@ try:
 
                 if bumperLEFTState:
                     # turn RIGHT 90 degrees (hit left bumper)
-                    current_position_left = current_position_left + distance_rotation
-                    current_position_right = current_position_right - distance_rotation
-                else:
-                    # turn LEFT 90 degrees (hit right bumper)
                     current_position_left = current_position_left - distance_rotation
                     current_position_right = current_position_right + distance_rotation
+                else:
+                    # turn LEFT 90 degrees (hit right bumper)
+                    current_position_left = current_position_left + distance_rotation
+                    current_position_right = current_position_right - distance_rotation
 
                 BP.set_motor_position(left_motor, current_position_left)                
                 BP.set_motor_position(right_motor, current_position_right)             

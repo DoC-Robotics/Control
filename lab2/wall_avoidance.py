@@ -26,7 +26,7 @@ try:
 
     BP.set_sensor_type(left_bumper, BP.SENSOR_TYPE.TOUCH)
     BP.set_sensor_type(right_bumper, BP.SENSOR_TYPE.TOUCH)
-    BP.set_sensor_type(ultrasonic_sensor, BP.SENSOR_TYPE.TOUCH)
+    BP.set_sensor_type(ultrasonic_sensor, BP.SENSOR_TYPE.NXT_ULTRASONIC)
 
     ###### HYPERPARAMETERS ######
     rotate_duration = 3
@@ -82,12 +82,12 @@ try:
 
                 if bumperLEFTState:
                     # turn RIGHT 90 degrees (hit left bumper)
-                    current_position_left = current_position_left + distance_rotation
-                    current_position_right = current_position_right - distance_rotation
-                else:
-                    # turn LEFT 90 degrees (hit right bumper)
                     current_position_left = current_position_left - distance_rotation
                     current_position_right = current_position_right + distance_rotation
+                else:
+                    # turn LEFT 90 degrees (hit right bumper)
+                    current_position_left = current_position_left + distance_rotation
+                    current_position_right = current_position_right - distance_rotation
 
                 BP.set_motor_position(left_motor, current_position_left)                
                 BP.set_motor_position(right_motor, current_position_right)             
