@@ -2,15 +2,15 @@
 import math
 import time
 import brickpi3
+import particles
 
 BP = brickpi3.BrickPi3()
+NUMBER_OF_PARTICLES = 100
 
-def calc_waypoint(target,current):
+def calc_waypoint(target,current, particles):
     """
-    
     target [Wx,Wy]
     current [x,y,theta]
-    
     """
 
     rot_scale = 220/90 #as 220 needed to rotate 90. 
@@ -18,6 +18,7 @@ def calc_waypoint(target,current):
     x_diff = target[0]-current[0]
     y_diff = target[1]-current[1]
 
+    # TODO: Update the coordiantes and angle of particles using particles script. 
     euclid_distance = math.sqrt(y_diff**2+x_diff**2)
 
     angle_diff = math.atan(y_diff/x_diff)*180/math.pi
@@ -59,16 +60,27 @@ def rotate_and_move(angle_diff,scale_factor_rot,distance,sf_straight):
     time.sleep(1)
 
     return
-
-
-
-
     # angle_diff = 
     #math.arctan(1)
     
 #220 is the distance to rotation 
+
+def estimated_position_and_orientation(particles):
+    est_x,est_y,est_theta = 0
+    for i in range(NUMBER_OF_PARTICLES):
+        x += particles.coordinates[i][0] * particles.weights[i]
+        y += particles.coordinates[i][1] * particles.weights[i]
+        theta += particles.coordinates[i][2] * particles.weights[i]
+    
+    return est_x, est_y, est_theta
     
 if __name__=="__main__":
     # current = control.some_function()
     # print(math.arctan(1))
-    calc_waypoint([15,15],[0,0,0])
+    particles = particles.particles()
+    x, y, theta = estimated_position_and_orientation(particles)
+    print("current coords: ",x,y,theta)
+    print("Write down the coordinates you want to get to:")
+    x_goal, y_goal = input("Enter x y: ").split()
+    calc_waypoint([x_goal,y_goal],[x,y,theta])
+    
