@@ -3,7 +3,7 @@ import math
 import time
 import brickpi3
 import particlesMCL
-# WORKING WITH A SIMPLE LOCATION MEMORY
+# WORKING WITH particlesMCL
 
 BP = brickpi3.BrickPi3()
 NUMBER_OF_PARTICLES = 100
@@ -20,6 +20,7 @@ def calc_waypoint(target,current, particles):
     x_diff = target[0]-current[0]
     y_diff = target[1]-current[1]
 
+    # TODO: Update the coordiantes and angle of particles using particles script. 
     euclid_distance = math.sqrt(y_diff**2+x_diff**2)
     angle_diff = current[2]
 
@@ -38,16 +39,14 @@ def calc_waypoint(target,current, particles):
             print("down Y axis")
             angle_diff = 270
     else:
-        angle_diff = math.atan(y_diff/x_diff)*180/math.pi # TODO: NOT WORKING, trying to find a solution (broken eg: from 10,10,45 to 0,0,t it doesnt turn correctly)
-    print("angle_diff: ", angle_diff)
-    if angle_diff < 0: angle_diff+=360
- 
+        angle_diff = math.atan(y_diff/x_diff)*180/math.pi # TODO: NOT WORKING (edited in waypoint)
+
     rotate_amount = angle_diff-current[2]
     print("calculating rotation amount:",rotate_amount,"Euclid",euclid_distance)
     rotate_and_move(angle_diff=rotate_amount,scale_factor_rot=rot_scale,distance=euclid_distance,sf_straight=straight_scale)
-    # particles.genNewParticlesRotation(rotate_amount)
-    # particles.genNewParticlesStraight(euclid_distance)
-    return target[0], target[1], (current[2]+rotate_amount)
+    particles.genNewParticlesRotation(rotate_amount)
+    particles.genNewParticlesStraight(euclid_distance)
+    return particles
 
 def rotate_and_move(angle_diff,scale_factor_rot,distance,sf_straight):
 
@@ -119,12 +118,13 @@ if __name__=="__main__":
     
     try:
         while True:
-            # x, y, theta = estimated_position_and_orientation(particles)
-            x,y,theta = current_pos
+            x, y, theta = estimated_position_and_orientation(particles)
             print("current coords: ",x,y,theta)
             print("Write down the coordinates you want to get to:")
             x_goal, y_goal = input("Enter x y: ").split()
             x_goal, y_goal = float(x_goal),float(y_goal)
-            current_pos = calc_waypoint([x_goal,y_goal],[x,y,theta], particles)
+            new_particles = calc_waypoint([x_goal,y_goal],[x,y,theta], particles)
+            particles = new_particles
+
     except KeyboardInterrupt:
         BP.reset_all()

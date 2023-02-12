@@ -6,7 +6,7 @@ import time
 NUMBER_OF_PARTICLES = 100
 
 
-class particles():
+class particlesMCL():
     """Class for particles. Practical 2.1 - Representing and Displaying Uncertain Motion with a Particle Set"""
     def __init__(self):
         # Coordinates (x, y, theta)
@@ -24,8 +24,8 @@ class particles():
             params: D
         """
         mu = 0
-        sigma_e = D*0.005   #CHANGE - 1 HOUR LEFT TO DO IT ELSE I WILL REPORT YOU TO TICKETING TEAM
-        sigma_f = 0.005   #CHANGE - 1 HOUR LEFT TO DO IT ELSE I WILL REPORT YOU TO TICKETING TEAM
+        sigma_e = D*0.002    #CHANGE - 1 HOUR LEFT TO DO IT ELSE I WILL REPORT YOU TO TICKETING TEAM
+        sigma_f = 0.002   #CHANGE - 1 HOUR LEFT TO DO IT ELSE I WILL REPORT YOU TO TICKETING TEAM
         
         particles = []
         for i in range(NUMBER_OF_PARTICLES):
@@ -33,16 +33,16 @@ class particles():
             e = random.gauss(mu, sigma_e)
             f = random.gauss(mu, sigma_f)
 
-            x_new = self.coordinates[i][0] + (D+e) * math.cos(self.coordinates[i][2])
-            y_new = self.coordinates[i][1] + (D+e) * math.sin(self.coordinates[i][2])
+            x_new = self.coordinates[i][0] + (D+e) * math.cos(float(self.coordinates[i][2])*math.pi/180)
+            y_new = self.coordinates[i][1] + (D+e) * math.sin(float(self.coordinates[i][2])*math.pi/180)
             theta_new = self.coordinates[i][2] + f
             particles.append((x_new, y_new, theta_new))
-            self.printLine((self.coordinates[i][0], self.coordinates[i][1], x_new, y_new)) # to be expected path
+            # self.printLine((self.coordinates[i][0], self.coordinates[i][1], x_new, y_new)) # to be expected path
             self.coordinates[i][0] = x_new
             self.coordinates[i][1] = y_new
             self.coordinates[i][2] = theta_new
         
-        self.printParticles(particles)
+        # self.printParticles(particles)
 
 
     def genNewParticlesRotation(self, alpha):
@@ -51,7 +51,7 @@ class particles():
             return: None
         """
         mu = 0
-        sigma_g = 0.01
+        sigma_g = 0.0025*alpha
         g = random.gauss(mu, sigma_g)
 
         particles = []
@@ -64,7 +64,7 @@ class particles():
             self.coordinates[i][1] = y_new
             self.coordinates[i][2] = theta_new
             
-        self.printParticles(particles)
+        # self.printParticles(particles)
 
 
     def printLine(self, line):

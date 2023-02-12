@@ -38,7 +38,7 @@ try:
 
     ###### HYPERPARAMETERS ######
     distance_straight = 640
-    distance_rotation = 220  # 230
+    distance_rotation = 215  # 220
     current_position_left = 0  # initial position
     current_position_right = 0  # initial position
     side_division = 4
