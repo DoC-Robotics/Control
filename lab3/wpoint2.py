@@ -1,11 +1,12 @@
 # import control
 import math
 import time
-import brickpi3
+# import brickpi3
 import particlesMCL
+import test_map
 # WORKING WITH particlesMCL
 
-BP = brickpi3.BrickPi3()
+BP = ...
 NUMBER_OF_PARTICLES = 100
 
 def calc_waypoint(target,current, particles):
@@ -21,31 +22,25 @@ def calc_waypoint(target,current, particles):
     y_diff = target[1]-current[1]
 
     # TODO: Update the coordiantes and angle of particles using particles script. 
+    ###JAMES CHECK -> I think I've tested this 12th Feb 9:35PM
+    
     euclid_distance = math.sqrt(y_diff**2+x_diff**2)
-    angle_diff = current[2]
-
-    if (euclid_distance == abs(x_diff)):
-        if (target[0] >= current[0]):
-            print("right X axis")
-            angle_diff = 0
-        else:
-            print("left X axis")
-            angle_diff = 180
-    elif (euclid_distance == abs(y_diff)):
-        if (target[1] >= current[1]):
-            print("up Y axis")
-            angle_diff = 90
-        else:
-            print("down Y axis")
-            angle_diff = 270
-    else:
-        angle_diff = math.atan(y_diff/x_diff)*180/math.pi # TODO: NOT WORKING (edited in waypoint)
+    angle_diff = test_map.get_ang_diff(euclid_distance,x_diff,y_diff,target,current)
 
     rotate_amount = angle_diff-current[2]
     print("calculating rotation amount:",rotate_amount,"Euclid",euclid_distance)
-    rotate_and_move(angle_diff=rotate_amount,scale_factor_rot=rot_scale,distance=euclid_distance,sf_straight=straight_scale)
+
+    #swing to adjust between pi and -pi. 
+    if rotate_amount<-180:
+        rotate_amount += 360
+
+    elif rotate_amount>180:
+        rotate_amount-=360
+
+    # rotate_and_move(angle_diff=rotate_amount,scale_factor_rot=rot_scale,distance=euclid_distance,sf_straight=straight_scale)
     particles.genNewParticlesRotation(rotate_amount)
     particles.genNewParticlesStraight(euclid_distance)
+
     return particles
 
 def rotate_and_move(angle_diff,scale_factor_rot,distance,sf_straight):
