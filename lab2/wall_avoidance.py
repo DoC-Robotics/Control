@@ -35,11 +35,11 @@ try:
     max_speed = 100 # will gradually slow down when approaching wall
     distance_rotation = 220 
     proportion_control_const = 5
-    target_distance = 30   #cm -> always aim to keep the rover at a targeted distance of 30cm away from the obstacle(wall)
+    target_distance = 10   #cm -> always aim to keep the rover at a targeted distance of 30cm away from the obstacle(wall)
     ######                 ######
 
-    BP.set_motor_limits(left_motor, 50, 100)          # set a power limit (in percent) and a speed limit (in Degrees Per Second)
-    BP.set_motor_limits(right_motor, 50, 100)
+    BP.set_motor_limits(left_motor, 50, 50)          # set a power limit (in percent) and a speed limit (in Degrees Per Second)
+    BP.set_motor_limits(right_motor, 50, 50)
 
     readings = []
 
@@ -52,16 +52,17 @@ try:
             ultrasonicState = BP.get_sensor(ultrasonic_sensor)
             bumperLEFTState = BP.get_sensor(left_bumper)
             bumperRIGHTState = BP.get_sensor(right_bumper)
-            print("ultrasonic reading: ", ultrasonicState ,"left ", bumperLEFTState, " - right ", bumperRIGHTState)
+            print("ultrasonic reading: ", ultrasonicState ," - bumpers left ", bumperLEFTState, " - right ", bumperRIGHTState)
             
             if len(readings) < 5:
                 readings.append(ultrasonicState)
             else:
                 readings.pop(0)
                 readings.append(ultrasonicState)
-
+            # print("ultrasonit reading: ", statistics.median(readings))
             difference = statistics.median(readings) - target_distance
             BP.set_motor_dps(left_motor + right_motor, proportion_control_const * difference)
+            # time.sleep(1)
             
             # ultrasonic target
             # take difference between current distance and targeted dist (30cm)

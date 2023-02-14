@@ -51,7 +51,7 @@ def test_get_angle():
         print("ITER:",num,"VALS:",tmp,x)
     pass
 
-def arctan_map(x_map,y_map,angle):
+def arctan_map(x_diff,y_diff,angle_diff):
     '''
     
     Takes the arctanned parameter between x and y we get 
@@ -59,14 +59,14 @@ def arctan_map(x_map,y_map,angle):
     '''
     #covers quadrant 3
     
-    if ((x_map<0) and (y_map<0)):
-        angle -= 180
+    if ((x_diff<0) and (y_diff<0)):
+        angle_diff -= 180
     
     #covers quadrant 2 and gets value. 
-    elif x_map<0:
-        angle += 180
+    elif x_diff<0:
+        angle_diff += 180
     
-    return angle
+    return angle_diff
 
 
 def get_ang_diff(euc_dist,x_diff,y_diff,target,current):

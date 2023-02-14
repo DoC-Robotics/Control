@@ -59,12 +59,21 @@ class particlesMCL():
             x_new = self.coordinates[i][0]
             y_new = self.coordinates[i][1]
             theta_new = self.coordinates[i][2] + alpha + g
+            theta_new = self.wrapAngleTo180(theta_new)
             particles.append((x_new, y_new, theta_new))
             self.coordinates[i][0] = x_new
             self.coordinates[i][1] = y_new
             self.coordinates[i][2] = theta_new
             
         # self.printParticles(particles)
+
+    def wrapAngleTo180(self, theta_new):
+        if theta_new>180:
+            theta_new -=360
+        elif theta_new<-180:
+            theta_new+=360
+        return theta_new
+
 
 
     def printLine(self, line):

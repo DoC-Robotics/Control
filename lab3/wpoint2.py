@@ -1,12 +1,12 @@
 # import control
 import math
 import time
-# import brickpi3
+import brickpi3
 import particlesMCL
 import test_map
 # WORKING WITH particlesMCL
 
-BP = ...
+BP = brickpi3.BrickPi3()
 NUMBER_OF_PARTICLES = 100
 
 def calc_waypoint(target,current, particles):
@@ -37,7 +37,7 @@ def calc_waypoint(target,current, particles):
     elif rotate_amount>180:
         rotate_amount-=360
 
-    # rotate_and_move(angle_diff=rotate_amount,scale_factor_rot=rot_scale,distance=euclid_distance,sf_straight=straight_scale)
+    rotate_and_move(angle_diff=rotate_amount,scale_factor_rot=rot_scale,distance=euclid_distance,sf_straight=straight_scale)
     particles.genNewParticlesRotation(rotate_amount)
     particles.genNewParticlesStraight(euclid_distance)
 
