@@ -2,7 +2,7 @@
 import math
 import time
 import brickpi3
-import particlesMCL
+import lab4.particlesMCL as particlesMCL
 # WORKING WITH A SIMPLE LOCATION MEMORY
 
 BP = brickpi3.BrickPi3()
