@@ -12,6 +12,7 @@ class particlesMCL():
         # Coordinates (x, y, theta)
         self.coordinates = np.zeros((NUMBER_OF_PARTICLES, 3))
         self.weights = np.full((NUMBER_OF_PARTICLES, 1), 1/NUMBER_OF_PARTICLES)
+        
         for i in range(NUMBER_OF_PARTICLES):
             self.coordinates[i][0] = 0
             self.coordinates[i][1] = 0

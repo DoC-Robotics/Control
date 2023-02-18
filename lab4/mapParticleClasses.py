@@ -8,10 +8,11 @@ import math
 
 # Functions to generate some dummy particles data:
 def calcX(t):
-    return random.gauss(80,3) + 70*(math.sin(t)); # in cm
+    # around coord
+    return random.gauss(random.randrange(9,130),3) + 70*(math.sin(t)); # in cm
 
 def calcY(t):
-    return random.gauss(70,3) + 60*(math.sin(2*t)); # in cm
+    return random.gauss(random.randrange(9,130),3) + 60*(math.sin(2*t)); # in cm
 
 def calcW():
     return random.random();
@@ -64,7 +65,7 @@ class Map:
 # Simple Particles set
 class Particles:
     def __init__(self):
-        self.n = 10;    
+        self.n = 100;    
         self.data = [];
 
     def update(self, t):
@@ -72,6 +73,9 @@ class Particles:
     
     def draw(self):
         canvas.drawParticles(self.data);
+
+    def drawPath(self,line):
+        canvas.drawLine(line);
 
 canvas = Canvas();	# global canvas we are going to draw on
 

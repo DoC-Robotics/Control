@@ -1,9 +1,9 @@
-# """" Question 6.3 """"
+# """" Lab 4 rover movement control """"
 
 # use python 3 syntax but make it compatible with python 2
 from __future__ import print_function
 from __future__ import division  # ''
-import particles
+import particlesMCL
 
 import time     # import the time library for the sleep function
 import brickpi3  # import the BrickPi3 drivers
@@ -35,7 +35,7 @@ try:
     distance_rotation = 215  # 220
     # current_position_left = 0  # initial position
     # current_position_right = 0  # initial position
-    distance_graphics = 155
+    distance_graphics = 78 # per 10 cm visually
     rotation_graphics = -math.pi/2
     target_distance = 20   #cm 
     ######                 ######
@@ -48,7 +48,7 @@ try:
     # set a power limit (in percent) and a speed limit (in Degrees Per Second)
     BP.set_motor_limits(left_motor, 50, 200)
     BP.set_motor_limits(right_motor, 50, 200)
-    particles = particles.particles()
+    particles = particlesMCL.particlesMCL()
 
     while True:
         #   reset motor states
@@ -82,6 +82,7 @@ try:
             ##### call prediction for one step
             particles.genNewParticlesRotation(rotation_graphics)
             time.sleep(rotation_duration)
+
             print("after rotation:  Motor left Status: ", BP.get_motor_status(
                 left_motor), "Motor right Status: ", BP.get_motor_status(right_motor))
 

@@ -7,11 +7,18 @@ NUMBER_OF_PARTICLES = 100
 
 
 class particlesMCL():
-    """Class for particles. Practical 2.1 - Representing and Displaying Uncertain Motion with a Particle Set"""
+    """
+
+    Class for particles. Practical 2.1 - Representing and Displaying Uncertain Motion with a Particle Set
+    
+    """
+
     def __init__(self):
         # Coordinates (x, y, theta)
         self.coordinates = np.zeros((NUMBER_OF_PARTICLES, 3))
         self.weights = np.full((NUMBER_OF_PARTICLES, 1), 1/NUMBER_OF_PARTICLES)
+
+        #sets the coordinates to have value 0 and also initialize weights to have little biases. 
         for i in range(NUMBER_OF_PARTICLES):
             self.coordinates[i][0] = 0
             self.coordinates[i][1] = 0
@@ -20,16 +27,21 @@ class particlesMCL():
 
 
     def genNewParticlesStraight(self, D):
-        """Generate new particles from a straight line motion model.
-            params: D
         """
+
+        Generate new particles from a straight line motion model.
+        params: D
+
+        """
+
         mu = 0
-        sigma_e = D*0.002    #CHANGE - 1 HOUR LEFT TO DO IT ELSE I WILL REPORT YOU TO TICKETING TEAM
-        sigma_f = 0.002   #CHANGE - 1 HOUR LEFT TO DO IT ELSE I WILL REPORT YOU TO TICKETING TEAM
+        sigma_e = D*0.002    
+        sigma_f = 0.002   
         
         particles = []
+
         for i in range(NUMBER_OF_PARTICLES):
-            
+            #gets e and f parameters from a normal distribution. 
             e = random.gauss(mu, sigma_e)
             f = random.gauss(mu, sigma_f)
 
@@ -37,6 +49,7 @@ class particlesMCL():
             y_new = self.coordinates[i][1] + (D+e) * math.sin(float(self.coordinates[i][2])*math.pi/180)
             theta_new = self.coordinates[i][2] + f
             particles.append((x_new, y_new, theta_new))
+
             # self.printLine((self.coordinates[i][0], self.coordinates[i][1], x_new, y_new)) # to be expected path
             self.coordinates[i][0] = x_new
             self.coordinates[i][1] = y_new
@@ -58,9 +71,11 @@ class particlesMCL():
         for i in range(NUMBER_OF_PARTICLES):    # _ is cooler than i when i is not used
             x_new = self.coordinates[i][0]
             y_new = self.coordinates[i][1]
+
             theta_new = self.coordinates[i][2] + alpha + g
             theta_new = self.wrapAngleTo180(theta_new)
             particles.append((x_new, y_new, theta_new))
+
             self.coordinates[i][0] = x_new
             self.coordinates[i][1] = y_new
             self.coordinates[i][2] = theta_new
@@ -70,8 +85,10 @@ class particlesMCL():
     def wrapAngleTo180(self, theta_new):
         if theta_new>180:
             theta_new -=360
+
         elif theta_new<-180:
             theta_new+=360
+
         return theta_new
 
 
@@ -91,6 +108,7 @@ class particlesMCL():
 
     def printParticles(self, particles):
         """Print particles to the screen."""
+
         # list of 3-tuples (x,y, theta)
         for i in range(len(particles)):
             new_tuple = list(particles[i])
@@ -98,6 +116,7 @@ class particlesMCL():
             new_tuple[1] += 700
             particles[i] = tuple(new_tuple)
             #print(particles[i])
+
         print("drawParticles:"+ str(particles))
         #x, w = initialise_particles()
 
