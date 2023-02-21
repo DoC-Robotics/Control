@@ -20,6 +20,7 @@ def normalise_weights(particles_set, total_weight):
 
     for i in range(particlesMCL.NUMBER_OF_PARTICLES):
         particles_set.weights[i] = particles_set.weights[i] / total_weight
+    return particles_set
          
 
 def get_particles_cumulative_prob_dict(particle_set):

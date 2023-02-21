@@ -2,7 +2,6 @@
 import math
 import time
 import brickpi3
-import lab4.particlesMCL as particlesMCL
 import test_map
 import likelihood
 import normalising_resampling3_2
@@ -102,10 +101,11 @@ def distance_measured():
     while time.time() < t_end:
         try:
             ultrasonicState = BP.get_sensor(ultrasonic_sensor)
+            readings.append(ultrasonicState)
+            # print("ultrasonic reading at time ",time.time()," : ", ultrasonicState)
         except brickpi3.SensorError as error:
             print(error)
-        readings.append(ultrasonicState)
-        print("ultrasonic reading at time ",time.time()," : ", median_reading)
+
     median_reading = statistics.median(readings)
     print("Real reading to the facing wall: ", median_reading)
     # NO OBSTACLE AVOIDANCE, AS NOT NEEDED IN THE GIVEN PATH
@@ -126,20 +126,20 @@ if __name__=="__main__":
     map.draw()
     particles = particlesMCL.particlesMCL()
     start_flag = True
-    
+    path=[(84,30),(180,30),(180,54),(138,54),(138,168),(114,168),(114,84),(84,84),(84,30)]
+    ###### LOOPING THROUGH THE GIVEN PATH
     try:
-        while True:
+        for path_index in range(0, len(path)-1):
             if start_flag:
-                print("Write down the coordinates you are at (are starting from):")
-                x_start, y_start = input("Enter x y: ").split()
+                print("Coordinates you are at (are starting from):", path[0])
                 start_flag = False
-                particles.initialise_at(x_start, y_start)
+                particles.initialise_at(path[0][0],path[0][1])
+                path_index += 1
 
             x, y, theta = estimated_position_and_orientation(particles)
             print("current coords: ",x,y,theta)
-            print("Write down the coordinates you want to get to:")
-            x_goal, y_goal = input("Enter x y: ").split()
-            x_goal, y_goal = float(x_goal),float(y_goal)
+            print("Coordinates you want to get to:", path[path_index])
+            x_goal, y_goal = path[path_index][0], path[path_index][0] 
 
             # Moves robot to the position given and speads the particles
             spread_particles = calc_waypoint([x_goal,y_goal],[x,y,theta], particles) 
@@ -150,6 +150,32 @@ if __name__=="__main__":
             
             # Resampling a new set of particles
             particles = normalising_resampling3_2.normalising_and_resampling(spread_particles)
+            time.sleep(2)
+
+    ######### WITH USER INPUT    
+    # try:
+    #     while True:
+    #         if start_flag:
+    #             print("Write down the coordinates you are at (are starting from):")
+    #             x_start, y_start = input("Enter x y: ").split()
+    #             start_flag = False
+    #             particles.initialise_at(x_start, y_start)
+
+    #         x, y, theta = estimated_position_and_orientation(particles)
+    #         print("current coords: ",x,y,theta)
+    #         print("Write down the coordinates you want to get to:")
+    #         x_goal, y_goal = input("Enter x y: ").split()
+    #         x_goal, y_goal = float(x_goal),float(y_goal)
+
+    #         # Moves robot to the position given and speads the particles
+    #         spread_particles = calc_waypoint([x_goal,y_goal],[x,y,theta], particles) 
+            
+    #         # Update weights based on likelihood function
+    #         distance_measurement = distance_measured() # measures the distance with the sonar sensor
+    #         likelihood.update_particles_weights(spread_particles, distance_measurement, map)
+            
+    #         # Resampling a new set of particles
+    #         particles = normalising_resampling3_2.normalising_and_resampling(spread_particles)
 
             
     except KeyboardInterrupt:
