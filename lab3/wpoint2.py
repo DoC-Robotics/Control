@@ -2,7 +2,7 @@
 import math
 import time
 import brickpi3
-import lab4.particlesMCL as particlesMCL
+import lab3.particlesMCL as particlesMCL
 import test_map
 # WORKING WITH particlesMCL
 

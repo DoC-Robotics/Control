@@ -4,6 +4,7 @@
 from __future__ import print_function
 from __future__ import division  # ''
 import particlesMCL
+import likelihood3_1
 
 import time     # import the time library for the sleep function
 import brickpi3  # import the BrickPi3 drivers
@@ -31,7 +32,7 @@ try:
     ###### HYPERPARAMETERS ######
     rotation_duration = 4
     straight_duration = 2.5
-    distance_straight = 160 # per 10 cm
+    distance_straight = 320 # per 20 cm
     distance_rotation = 215  # 220
     # current_position_left = 0  # initial position
     # current_position_right = 0  # initial position
@@ -49,6 +50,7 @@ try:
     BP.set_motor_limits(left_motor, 50, 200)
     BP.set_motor_limits(right_motor, 50, 200)
     particles = particlesMCL.particlesMCL()
+    map = likelihood3_1.initialise_map()
 
     while True:
         #   reset motor states

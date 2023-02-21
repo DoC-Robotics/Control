@@ -1,19 +1,53 @@
 import math
-import mapParticleClasses
 import particlesMCL
 
 import numpy as np
 
-# Likelihood for lab3.1 without normalisation and using the random particles given by the professor (mapParticleClasses), 
-# weights not updated in our own particles class
+# Likelihood for lab3.2 and 3.3 
 
-# DONE - loop through all walls and find the wall with a coordinate that is on the line of the particle with orientation theta 
-# DONE - for x_coord_wall we it needs to be equal to single_particle[0]+(Z*math.cos(single_particle[2])
-# DONE - for y_coord_wall we it needs to be equal to single_particle[1]+(Z*math.cos(single_particle[2])
-# DONE - where Z is just a random range that would reach all walls on the map
-# DONE - if line intersects then that is the wall that can be reached, and then we calculate the distance m to it
-# marco done - then look at the difference between m and the actual measurement z and calculate a likelihood value using a Gaussian model
+# A Canvas class for drawing a map and particles:
+# 	- it takes care of a proper scaling and coordinate transformation between
+#	  the map frame of reference (in cm) and the display (in pixels)
+class Canvas:
+    def __init__(self,map_size=210):
+        self.map_size    = map_size;    # in cm;
+        self.canvas_size = 768;         # in pixels;
+        self.margin      = 0.05*map_size;
+        self.scale       = self.canvas_size/(map_size+2*self.margin);
 
+    def drawLine(self,line):
+        x1 = self.__screenX(line[0]);
+        y1 = self.__screenY(line[1]);
+        x2 = self.__screenX(line[2]);
+        y2 = self.__screenY(line[3]);
+        print ("drawLine:" + str((x1,y1,x2,y2)))
+
+    def drawParticles(self,data):
+        display = [(self.__screenX(d[0]),self.__screenY(d[1])) + d[2:] for d in data];
+        print ("drawParticles:" + str(display))
+
+    def __screenX(self,x):
+        return (x + self.margin)*self.scale
+
+    def __screenY(self,y):
+        return (self.map_size + self.margin - y)*self.scale
+
+# A Map class containing walls
+class Map:
+    def __init__(self):
+        self.walls = [];
+
+    def add_wall(self,wall):
+        self.walls.append(wall);
+
+    def clear(self):
+        self.walls = [];
+
+    def draw(self):
+        for wall in self.walls:
+            canvas.drawLine(wall);
+
+canvas = Canvas() # setting up the canvas to draw the map
 
 def calculate_distance_to_wall(x_coor, y_coor, theta, wall_a_x_coor,wall_a_y_coor, wall_b_x_coor, wall_b_y_coor):
     '''
@@ -22,25 +56,27 @@ def calculate_distance_to_wall(x_coor, y_coor, theta, wall_a_x_coor,wall_a_y_coo
     Gets distance to wall based on x,y, theta parameters.  
 
     '''
-    if ((theta == 90 or theta == 270) and wall_b_x_coor-wall_a_x_coor == 0):
-        return float('inf')
-    elif ((theta == 0 or theta == 180 or theta == 360) and wall_b_y_coor-wall_a_y_coor == 0):
-        return float('inf')
+    # if ((theta == 90 or theta == 270) and wall_b_x_coor-wall_a_x_coor == 0):
+    #     return float('inf')
+    # elif ((theta == 0 or theta == 180 or theta == 360) and wall_b_y_coor-wall_a_y_coor == 0):
+    #     return float('inf')
     # division by 0 if theta is 90 and wall y is on x axis (0 coords), same problem if 180 theta with wall on y axis (0 coords)
     # parallel case when walls starting from origin
     # (0 - 0)*1 - (168-0)*0 = 0 -> particle with orientation +-90degreees, and wall OA
     # (210-0)*0 - (0 - 0)*1 -> particle with orientation +-180degrees, and wall OH
     
-
     #gives the numerator and denominator for the distance to the wall. 
     numerator = (wall_b_y_coor-wall_a_y_coor) * (wall_a_x_coor - x_coor) - (wall_b_x_coor - wall_a_x_coor) * (wall_a_y_coor - y_coor)
     denominator = (wall_b_y_coor - wall_a_y_coor)*math.cos(theta) - (wall_b_x_coor - wall_a_x_coor) * math.sin(theta)
+
+    if denominator == 0:
+        return float('inf')
     distance = (numerator) / (denominator)
     
     return distance
 
 def initialise_map():
-    mymap = mapParticleClasses.Map();
+    mymap = Map()
     # Definitions of walls
     '''
     
@@ -60,9 +96,8 @@ def initialise_map():
 
 def initialise_particles():
     #initializes particles and returns these. 
-    particles = mapParticleClasses.Particles()
-    # particles = particlesMCL.particlesMCL()
-
+    # particles = mapParticleClasses.Particles()
+    particles = particlesMCL.particlesMCL()
     
     return particles
 
@@ -71,11 +106,6 @@ def is_target_on_wall(particle, theta, wall_a, wall_b):
     theta = theta
     wall_a_x, wall_a_y = wall_a
     wall_b_x, wall_b_y = wall_b
-
-    # if ((theta == 90 or theta == 270) and wall_b_x-wall_a_x == 0):
-    #     return False
-    # elif ((theta == 0 or theta == 180 or theta == 360) and wall_b_y-wall_a_y == 0):
-    #     return False
 
     t_numerator = math.sin(theta)*(wall_a_x - x) - math.cos(theta)*(wall_a_y - y)
     t_denominator = math.cos(theta)*(wall_b_y - wall_a_y) - math.sin(theta)*(wall_b_x - wall_a_x)
@@ -87,54 +117,10 @@ def is_target_on_wall(particle, theta, wall_a, wall_b):
     return 0 <= t <= 1
 
 
-def line_segments_intersect(p1, p2, p3, p4):
-    """
-    Returns True if the line segments defined by the points p1 and p2, and p3 and p4, intersect.
-    """
-    x1, y1 = p1
-    x2, y2 = p2
-    x3, y3 = p3
-    x4, y4 = p4
-
-    # Calculate the slopes and y-intercepts of the two lines
-    m1 = (y2 - y1) / (x2 - x1) if abs(x2 - x1) > 1e-6 else float('inf')
-    b1 = y1 - m1 * x1
-    #m2 for wall
-    m2 = (y4 - y3) / (x4 - x3) if abs(x4 - x3) > 1e-6 else float('inf')
-    b2 = y3 - m2 * x3
-
-    # Check for parallel lines
-    if math.isclose(m1, m2):
-        return False
-
-    # Calculate the intersection point of the two lines
-    if m1 == float('inf'):
-        x = x1 # same with x2 as vertical line
-        y = m2 * x + b2
-    elif m2 == float('inf'):
-        x = x3 # same with x4 as vertical line/wall
-        y = m1 * x + b1
-    else:
-        x = (b2 - b1) / (m1 - m2)
-        y = m1 * x + b1
-
-    # Check if the intersection point is within the line segments
-    x_within_segment_1 = min(x1, x2) - 1e-2 <= x <= max(x1, x2) + 1e-2
-    y_within_segment_1 = min(y1, y2) - 1e-2 <= y <= max(y1, y2) + 1e-2
-    x_within_segment_2 = min(x3, x4) - 1e-2 <= x <= max(x3, x4) + 1e-2
-    y_within_segment_2 = min(y3, y4) - 1e-2 <= y <= max(y3, y4) + 1e-2
-
-    if x_within_segment_1 and y_within_segment_1 and x_within_segment_2 and y_within_segment_2:
-        return True
-    else:
-        return False
-
-
-
 def wrap_angle(angle):
     return ((angle + math.pi) % (2*math.pi)) - math.pi
 
-def get_distance_to_wall(map, single_particle):
+def get_distance_to_wall(map, particles, particle_index):
 
     '''
     This is a function to get the distance to the wall.
@@ -144,17 +130,14 @@ def get_distance_to_wall(map, single_particle):
     closest_facing_wall = None
 
     for i in range(len(map.walls)):
-        angle_radians = single_particle[2]*math.pi/180
-        distance = calculate_distance_to_wall(single_particle[0], single_particle[1], angle_radians, map.walls[i][0], map.walls[i][1], map.walls[i][2], map.walls[i][3])
+        angle_radians = particles.coordinates[particle_index][2] * math.pi/180
+        distance = calculate_distance_to_wall(particles.coordinates[particle_index][0], particles.coordinates[particle_index][1], angle_radians, map.walls[i][0], map.walls[i][1], map.walls[i][2], map.walls[i][3])
         wall_1 = (map.walls[i][0], map.walls[i][1])
         wall_2 = (map.walls[i][2], map.walls[i][3])
-        particle_1 = (single_particle[0], single_particle[1])
-        particle_2 = ( single_particle[0]+(abs(distance)*math.cos(angle_radians)), single_particle[1]+(abs(distance)*math.sin(angle_radians)) )
-        # slope = math.tan(single_particle[2]*math.pi/180)
+        particle_1 = (particles.coordinates[particle_index][0], particles.coordinates[particle_index][1])
 
         if distance != float('inf'):
             if is_target_on_wall(particle_1, angle_radians, wall_1, wall_2):
-            # if line_segments_intersect(particle_1, particle_2, wall_1, wall_2):
                 #get shortest distance and identify closest walls. 
                 if shortest_distance == 0 and distance >=0:
                     shortest_distance = distance
@@ -165,12 +148,12 @@ def get_distance_to_wall(map, single_particle):
                     closest_facing_wall = map.walls[i]
             
     # printing the straight path of the particle
-    get_cos = shortest_distance*math.cos(single_particle[2]*math.pi/180)
-    get_sin = shortest_distance*math.sin(single_particle[2]*math.pi/180)
+    get_cos = shortest_distance*math.cos(particles.coordinates[particle_index][2] * math.pi/180)
+    get_sin = shortest_distance*math.sin(particles.coordinates[particle_index][2] * math.pi/180)
 
-    particles.drawPath([single_particle[0], single_particle[1], single_particle[0]+get_cos, single_particle[1]+get_sin])   
+    particles.drawPath([particles.coordinates[particle_index][0], particles.coordinates[particle_index][1], particles.coordinates[particle_index]+get_cos, particles.coordinates[particle_index][1]+get_sin])   
 
-    print("Particle coordinates: ",single_particle[0]," ", single_particle[1]," ", single_particle[2] )
+    print("Particle coordinates: ",particles.coordinates[particle_index][0]," ", particles.coordinates[particle_index][1]," ", particles.coordinates[particle_index][2] )
     print("Shortest distance ", shortest_distance)
     print("Closest Wall: ", closest_facing_wall)
 
@@ -191,10 +174,10 @@ def get_likelihood_function(estimated_distance, measured_distance, standard_devi
     return likelihood
     
     
-def calculate_likelihood(particle, measured_distance, map):
+def calculate_likelihood(particles, particle_index,  measured_distance, map):
 
     #gets distance to closest wall and finds the closest wall
-    estimated_distance, closest_wall = get_distance_to_wall(map, particle)
+    estimated_distance, closest_wall = get_distance_to_wall(map, particles, particle_index)
     
     standard_deviation = 2.5 #22.5cm standard deviation
     # Likelihood ready to be multiplied with weight
@@ -206,6 +189,13 @@ def calculate_likelihood(particle, measured_distance, map):
     
 distance_graphics = 78 # per 10 cm visually
 rotation_graphics = -math.pi/2
+
+def update_particles_weights(particles, distance_measurement, map):
+    
+    for i in range(particlesMCL.NUMBER_OF_PARTICLES):
+        particles.weights[i] = particles.weights[i] * calculate_likelihood(particles, i,distance_measurement, map)
+    
+    
     
 if __name__=="__main__":
 
@@ -245,3 +235,4 @@ if __name__=="__main__":
     print("---- Sonar expected distance: ", read_val)        
     print("---- Particle with max probability: ", best_particle) 
     print("---- Likelihood is not normalised")       
+

@@ -25,6 +25,13 @@ class particlesMCL():
             self.coordinates[i][2] = 0
             self.weights[i] = 1/NUMBER_OF_PARTICLES
 
+    def initialise_at(self, x, y):
+        # initialise the particles at the starting coordinates
+        for i in range(NUMBER_OF_PARTICLES):
+            self.coordinates[i][0] = x
+            self.coordinates[i][1] = y
+            self.coordinates[i][2] = 0
+            self.weights[i] = 1/NUMBER_OF_PARTICLES
 
     def genNewParticlesStraight(self, D):
         """
