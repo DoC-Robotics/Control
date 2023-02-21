@@ -42,8 +42,8 @@ class particlesMCL():
         """
 
         mu = 0
-        sigma_e = D*0.002    
-        sigma_f = 0.002   
+        sigma_e = D*0.1    
+        sigma_f = 0.05   
         
         particles = []
 
@@ -87,7 +87,8 @@ class particlesMCL():
             self.coordinates[i][1] = y_new
             self.coordinates[i][2] = theta_new
             
-        self.printParticles(particles)
+        # self.printParticles(particles)
+        canvas.drawParticles(particles)
 
     def wrapAngleTo180(self, theta_new):
         if theta_new>180:
@@ -113,18 +114,19 @@ class particlesMCL():
         print("drawLine:"+ str(line))
 
 
-    def printParticles(self, particles):
+    def printParticles(self, particles): # not used, trying to shift and scale by canvas size
         """Print particles to the screen."""
 
         # list of 3-tuples (x,y, theta)
-        for i in range(len(particles)):
-            new_tuple = list(particles[i])
-            new_tuple[0] += 150
-            new_tuple[1] += 700
-            particles[i] = tuple(new_tuple)
-            #print(particles[i])
+        # for i in range(len(particles)):
+        #     new_tuple = list(particles[i])
+        #     new_tuple[0] += 150
+        #     new_tuple[1] += 700
+        #     particles[i] = tuple(new_tuple)
+        #     #print(particles[i])
+        display_particles = [(canvas.__screenX(d.coordinates[0]),canvas.__screenY(d.coordinates[1])) + d.coordinates[2] for d in particles];
 
-        print("drawParticles:"+ str(particles))
+        print("drawParticles:"+ str(display_particles))
         #x, w = initialise_particles()
 
 

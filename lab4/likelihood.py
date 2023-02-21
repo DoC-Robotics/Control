@@ -107,7 +107,7 @@ def get_distance_to_wall(map, particles, particle_index):
     get_cos = shortest_distance*math.cos(particles.coordinates[particle_index][2] * math.pi/180)
     get_sin = shortest_distance*math.sin(particles.coordinates[particle_index][2] * math.pi/180)
 
-    particles.drawPath([particles.coordinates[particle_index][0], particles.coordinates[particle_index][1], particles.coordinates[particle_index]+get_cos, particles.coordinates[particle_index][1]+get_sin])   
+    particles.drawPath((particles.coordinates[particle_index][0], particles.coordinates[particle_index][1], particles.coordinates[particle_index][0]+get_cos, particles.coordinates[particle_index][1]+get_sin))   
 
     print("Particle coordinates: ",particles.coordinates[particle_index][0]," ", particles.coordinates[particle_index][1]," ", particles.coordinates[particle_index][2] )
     print("Shortest distance ", shortest_distance)

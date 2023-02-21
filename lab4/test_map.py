@@ -94,7 +94,7 @@ def get_ang_diff(euc_dist,x_diff,y_diff,target,current):
             angle_diff = -90
 
     else:
-        angle_diff = math.atan(y_diff/x_diff)*180/math.pi # TODO: NOT WORKING, trying to find a solution (broken eg: from 10,10,45 to 0,0,t it doesnt turn correctly)
+        angle_diff = math.atan(y_diff/x_diff)*180/math.pi
         angle_diff = arctan_map(x_diff,y_diff,angle_diff)
     
     return angle_diff

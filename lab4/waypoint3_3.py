@@ -11,9 +11,7 @@ import statistics
 BP = brickpi3.BrickPi3()
 NUMBER_OF_PARTICLES = 100
 map = likelihood.initialise_map()
-
-
-
+particles = particlesMCL.particlesMCL()
 
 def calc_waypoint(target,current, particles):
     """
@@ -26,6 +24,8 @@ def calc_waypoint(target,current, particles):
     
     x_diff = target[0]-current[0]
     y_diff = target[1]-current[1]
+    print("x_diff: ", x_diff)
+    print("y_diff: ", y_diff)
     
     euclid_distance = math.sqrt(y_diff**2+x_diff**2)
     angle_diff = test_map.get_ang_diff(euclid_distance,x_diff,y_diff,target,current)
@@ -124,32 +124,33 @@ def estimated_position_and_orientation(particles):
 if __name__=="__main__":
 
     map.draw()
-    particles = particlesMCL.particlesMCL()
     start_flag = True
     path=[(84,30),(180,30),(180,54),(138,54),(138,168),(114,168),(114,84),(84,84),(84,30)]
     ###### LOOPING THROUGH THE GIVEN PATH
     try:
-        for path_index in range(0, len(path)-1):
-            if start_flag:
+        for path_index in range(0, len(path)):
+            if path_index == 0:
                 print("Coordinates you are at (are starting from):", path[0])
                 start_flag = False
                 particles.initialise_at(path[0][0],path[0][1])
-                path_index += 1
+            else:
+                print("Initilaised coordinates: ", particles.coordinates[0][0], particles.coordinates[0][1])
+                x, y, theta = estimated_position_and_orientation(particles)
+                print("current coords: ",x,y,theta)
+                print("Coordinates you want to get to:", path[path_index])
+                x_goal, y_goal = path[path_index][0], path[path_index][1] 
+                print("x_goal: ", x_goal)
+                print("y_goal: ", y_goal)
 
-            x, y, theta = estimated_position_and_orientation(particles)
-            print("current coords: ",x,y,theta)
-            print("Coordinates you want to get to:", path[path_index])
-            x_goal, y_goal = path[path_index][0], path[path_index][0] 
-
-            # Moves robot to the position given and speads the particles
-            spread_particles = calc_waypoint([x_goal,y_goal],[x,y,theta], particles) 
-            
-            # Update weights based on likelihood function
-            distance_measurement = distance_measured() # measures the distance with the sonar sensor
-            likelihood.update_particles_weights(spread_particles, distance_measurement, map)
-            
-            # Resampling a new set of particles
-            particles = normalising_resampling3_2.normalising_and_resampling(spread_particles)
+                # Moves robot to the position given and speads the particles
+                spread_particles = calc_waypoint([x_goal,y_goal],[x,y,theta], particles) 
+                
+                # Update weights based on likelihood function
+                distance_measurement = distance_measured() # measures the distance with the sonar sensor
+                likelihood.update_particles_weights(spread_particles, distance_measurement, map)
+                
+                # Resampling a new set of particles
+                particles = normalising_resampling3_2.normalising_and_resampling(spread_particles)
             time.sleep(2)
 
     ######### WITH USER INPUT    

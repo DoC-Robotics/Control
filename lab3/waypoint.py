@@ -90,7 +90,7 @@ def rotate_and_move(angle_diff,scale_factor_rot,distance,sf_straight):
     BP.set_motor_position(right_motor,distance*sf_straight)
 
     if distance<=10: time.sleep(2.5)
-    else: time.sleep(distance*2.2/10)
+    else: time.sleep(distance*1.2/10)
     print("moving END")
 
     return
