@@ -39,6 +39,14 @@ class particlesMCL():
             self.coordinates[i][2] = 0
             self.weights[i] = 1/NUMBER_OF_PARTICLES
 
+    def new_initialization(self, x, y, theta):
+        # initialise the particles at the starting coordinates
+        for i in range(NUMBER_OF_PARTICLES):
+            self.coordinates[i][0] = x
+            self.coordinates[i][1] = y
+            self.coordinates[i][2] = theta
+            self.weights[i] = 1/NUMBER_OF_PARTICLES
+            
     def genNewParticlesStraight(self, D):
         """
 
@@ -61,6 +69,7 @@ class particlesMCL():
             x_new = self.coordinates[i][0] + (D+e) * math.cos(float(self.coordinates[i][2])*math.pi/180)
             y_new = self.coordinates[i][1] + (D+e) * math.sin(float(self.coordinates[i][2])*math.pi/180)
             theta_new = self.coordinates[i][2] + f
+            theta_new = self.wrapAngleTo180(theta_new)
             particles.append((x_new, y_new, theta_new))
 
             # self.printLine((self.coordinates[i][0], self.coordinates[i][1], x_new, y_new)) # to be expected path
@@ -68,6 +77,7 @@ class particlesMCL():
             self.coordinates[i][1] = y_new
             self.coordinates[i][2] = theta_new
         
+        print("---PARTICLES MCL debug theta Straight:",theta_new," f value",f)
         self.printParticles(particles)
 
 
@@ -87,12 +97,14 @@ class particlesMCL():
 
             theta_new = self.coordinates[i][2] + alpha + g
             theta_new = self.wrapAngleTo180(theta_new)
+
             particles.append((x_new, y_new, theta_new))
 
             self.coordinates[i][0] = x_new
             self.coordinates[i][1] = y_new
             self.coordinates[i][2] = theta_new
-            
+        print("James Experiment alpha, g",alpha,g)
+        print("James exp last theta",theta_new)    
         self.printParticles(particles)
 
     def wrapAngleTo180(self, theta_new):
@@ -103,8 +115,6 @@ class particlesMCL():
             theta_new+=360
 
         return theta_new
-
-
 
     def printLine(self, line):
         """Print a line to the screen."""

@@ -7,6 +7,7 @@ import likelihood
 import normalising_resampling3_2
 import particlesMCL
 import statistics
+import math
 
 BP = brickpi3.BrickPi3()
 BP.reset_all()
@@ -26,12 +27,12 @@ def calc_waypoint(target,current, particles):
     current [x,y,theta]
     """
 
-    rot_scale = 215.0/90.0 #per 1 degree
+    rot_scale = 220.0/90.0 #per 1 degree #218
     straight_scale = 640.0/40.0 #per 1 cm
     
     x_diff = target[0]-current[0]
     y_diff = target[1]-current[1]
-    print("x_diff: ", x_diff)
+    print("----In Waypoint---- x_diff: ", x_diff)
     print("y_diff: ", y_diff)
     
     euclid_distance = math.sqrt(y_diff**2+x_diff**2)
@@ -51,6 +52,7 @@ def calc_waypoint(target,current, particles):
     
     # particles.genNewParticlesRotation(rotate_amount)
     # particles.genNewParticlesStraight(euclid_distance)
+    print("----Exit Waypoint-----: ")
 
     return particles
 
@@ -116,6 +118,7 @@ def rotate_and_move(angle_diff,scale_factor_rot,distance,sf_straight):
 
 def distance_measured():
     readings = []
+    length_rover = 7.5
     # target_distance = 20 #cm
     ultrasonic_sensor = BP.PORT_2
     BP.set_sensor_type(ultrasonic_sensor, BP.SENSOR_TYPE.NXT_ULTRASONIC)
@@ -125,8 +128,8 @@ def distance_measured():
     while time.time() < t_end:
         try:
             ultrasonicState = BP.get_sensor(ultrasonic_sensor)
-            readings.append(ultrasonicState)
-            print("ultrasonic reading at time ",time.time()," : ", ultrasonicState)
+            readings.append(ultrasonicState + length_rover)
+            print("ultrasonic reading at time ",time.time()," : ", ultrasonicState + length_rover)
         except brickpi3.SensorError as error:
             print(error)
             time.sleep(0.25)
@@ -145,20 +148,34 @@ def distance_measured():
         # median_reading only used for the updating of MCL particles
         return median_reading
 
+
+
+
 def estimated_position_and_orientation(particles):
     est_x, est_y, est_theta = 0,0,0
+    
+    # circular mean operation to deal with wrapping of coordinates
+    sum_cos = 0
+    sum_sin = 0
+
     for i in range(NUMBER_OF_PARTICLES):
         est_x += particles.coordinates[i][0] * particles.weights[i]
         est_y += particles.coordinates[i][1] * particles.weights[i]
-        est_theta += particles.coordinates[i][2] * particles.weights[i]
-    
+        
+        sum_cos =  math.cos(particles.coordinates[i][2]* math.pi / 180) * particles.weights[i]
+        sum_sin =  math.sin(particles.coordinates[i][2]* math.pi / 180) * particles.weights[i]
+        print("Weight ",particles.weights[i], " for theta ", particles.coordinates[i][2] )
+
+    mean_angle = math.atan2(sum_sin, sum_cos)
+    est_theta = mean_angle * 180 / math.pi
     return est_x, est_y, est_theta
-    
+
 if __name__=="__main__":
 
     map.draw()
     start_flag = True
     path=[(84,30),(180,30),(180,54),(138,54),(138,168),(114,168),(114,84),(84,84),(84,30)]
+    # path=[(180,54),(138,54),(138,168),(114,168),(114,84),(84,84),(84,30)]
     ###### LOOPING THROUGH THE GIVEN PATH
     try:
         for path_index in range(0, len(path)):
@@ -166,8 +183,9 @@ if __name__=="__main__":
                 print("Coordinates you are at (are starting from):", path[0])
                 start_flag = False
                 particles.initialise_at(path[0][0],path[0][1])
+                # particles.new_initialization(path[0][0],path[0][1], 90)
             else:
-                print("(Before weight estimation) coordinates: ", particles.coordinates[0][0], particles.coordinates[0][1])
+                print("(Example before weight estimation) coordinates[0]: ", particles.coordinates[0][0], particles.coordinates[0][1], particles.coordinates[0][2])
                 x, y, theta = estimated_position_and_orientation(particles)
                 print("current coords: ",x,y,theta)
                 print("Coordinates you want to get to:", path[path_index])
@@ -185,7 +203,7 @@ if __name__=="__main__":
                 # Resampling a new set of particles
                 particles = normalising_resampling3_2.normalising_and_resampling(spread_particles)
                 print("---- Resampled particles printed")
-                print(particles.convertNPtoTuples(particles))
+                #print(particles.convertNPtoTuples(particles))
                 particles.printParticles(particles.convertNPtoTuples(particles))
             time.sleep(3)
 

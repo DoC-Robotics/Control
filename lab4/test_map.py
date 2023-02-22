@@ -100,50 +100,46 @@ def get_ang_diff(euc_dist,x_diff,y_diff,target,current):
     return angle_diff
 
 
-def calc_waypoint(target,current, particles=None):
-    """
-    target [Wx,Wy]
-    current [x,y,theta]
-    """
+# def calc_waypoint(target,current, particles=None):
+#     """
+#     target [Wx,Wy]
+#     current [x,y,theta]
+#     """
 
-    rot_scale = 215.0/90.0 #per 1 degree
-    straight_scale = 640.0/40.0 #per 1 cm
+#     rot_scale = 215.0/90.0 #per 1 degree
+#     straight_scale = 640.0/40.0 #per 1 cm
     
-    x_diff = target[0]-current[0]
-    y_diff = target[1]-current[1]
+#     x_diff = target[0]-current[0]
+#     y_diff = target[1]-current[1]
 
-    euclid_distance = math.sqrt(y_diff**2+x_diff**2)
+#     euclid_distance = math.sqrt(y_diff**2+x_diff**2)
     
-    #gets an unmapped angle distance. 
-    angle_diff = get_ang_diff(euclid_distance,x_diff,y_diff,target,current)
+#     #gets an unmapped angle distance. 
+#     target_orientation = math.atan2(y_diff, x_diff) * 180 / math.pi
+#     rotation_amount = target_orientation - current[2]
+#     # print("angle_diff: ", angle_diff)
+
+#     if rotate_amount<-180:
+#         rotate_amount += 360
+
+#     elif rotate_amount>180:
+#         rotate_amount-=360
     
-    # print("angle_diff: ", angle_diff)
+#     # print("calculating rotation amount:",rotate_amount,"Euclid",euclid_distance)
+#     # rotate_and_move(angle_diff=rotate_amount,scale_factor_rot=rot_scale,distance=euclid_distance,sf_straight=straight_scale)
+#     # particles.genNewParticlesRotation(rotate_amount)
+#     # particles.genNewParticlesStraight(euclid_distance)
 
-    # if angle_diff < 0: angle_diff+=360
- 
-    rotate_amount = angle_diff-current[2]
-
-    if rotate_amount<-180:
-        rotate_amount += 360
-
-    elif rotate_amount>180:
-        rotate_amount-=360
-    
-    # print("calculating rotation amount:",rotate_amount,"Euclid",euclid_distance)
-    # rotate_and_move(angle_diff=rotate_amount,scale_factor_rot=rot_scale,distance=euclid_distance,sf_straight=straight_scale)
-    # particles.genNewParticlesRotation(rotate_amount)
-    # particles.genNewParticlesStraight(euclid_distance)
-
-    return rotate_amount,angle_diff
+#     return rotate_amount,angle_diff
 
 
 
-if __name__=="__main__":
+# if __name__=="__main__":
 
-    #I think the behaviour is right for this case. 
-    # test_get_angle()
+#     #I think the behaviour is right for this case. 
+#     # test_get_angle()
 
-    #uncomment this to see how arctan worked
-    # test_arctan()
+#     #uncomment this to see how arctan worked
+#     # test_arctan()
 
-    pass
+#     pass
