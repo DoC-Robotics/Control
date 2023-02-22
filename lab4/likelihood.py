@@ -109,9 +109,9 @@ def get_distance_to_wall(map, particles, particle_index):
 
     particles.drawPath((particles.coordinates[particle_index][0], particles.coordinates[particle_index][1], particles.coordinates[particle_index][0]+get_cos, particles.coordinates[particle_index][1]+get_sin))   
 
-    print("Particle coordinates: ",particles.coordinates[particle_index][0]," ", particles.coordinates[particle_index][1]," ", particles.coordinates[particle_index][2] )
-    print("Shortest distance ", shortest_distance)
-    print("Closest Wall: ", closest_facing_wall)
+    # print("Particle coordinates: ",particles.coordinates[particle_index][0]," ", particles.coordinates[particle_index][1]," ", particles.coordinates[particle_index][2] )
+    # print("Shortest distance ", shortest_distance)
+    # print("Closest Wall: ", closest_facing_wall)
 
     return shortest_distance, closest_facing_wall
 

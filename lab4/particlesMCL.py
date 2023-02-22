@@ -24,6 +24,12 @@ class particlesMCL():
             self.coordinates[i][1] = 0
             self.coordinates[i][2] = 0
             self.weights[i] = 1/NUMBER_OF_PARTICLES
+        
+        map_size = 210
+        self.map_size    = map_size;    # in cm;
+        self.canvas_size = 768;         # in pixels;
+        self.margin      = 0.05*map_size;
+        self.scale       = self.canvas_size/(map_size+2*self.margin);
 
     def initialise_at(self, x, y):
         # initialise the particles at the starting coordinates
@@ -42,8 +48,8 @@ class particlesMCL():
         """
 
         mu = 0
-        sigma_e = D*0.1    
-        sigma_f = 0.05   
+        sigma_e = D*0.025 #initially 0.05    
+        sigma_f = 0.025 #initially 0.05
         
         particles = []
 
@@ -71,7 +77,7 @@ class particlesMCL():
             return: None
         """
         mu = 0
-        sigma_g = 0.0025*alpha
+        sigma_g = 0.00125*alpha #inititally 0.0025
         g = random.gauss(mu, sigma_g)
 
         particles = []
@@ -87,8 +93,7 @@ class particlesMCL():
             self.coordinates[i][1] = y_new
             self.coordinates[i][2] = theta_new
             
-        # self.printParticles(particles)
-        canvas.drawParticles(particles)
+        self.printParticles(particles)
 
     def wrapAngleTo180(self, theta_new):
         if theta_new>180:
@@ -110,23 +115,28 @@ class particlesMCL():
         shifted_line[2] += 150
         shifted_line[3] += 700
         line = tuple(shifted_line)
-        #print(shifted_line)
         print("drawLine:"+ str(line))
 
+    def convertNPtoTuples(self, particlesNP):
+        particles = []
+        for i in range(len(particlesNP.coordinates)):
+            particles.append((particlesNP.coordinates[i][0], particlesNP.coordinates[i][1], float(particlesNP.coordinates[i][2])))
+        return particles
 
     def printParticles(self, particles): # not used, trying to shift and scale by canvas size
         """Print particles to the screen."""
 
         # list of 3-tuples (x,y, theta)
-        # for i in range(len(particles)):
-        #     new_tuple = list(particles[i])
-        #     new_tuple[0] += 150
-        #     new_tuple[1] += 700
-        #     particles[i] = tuple(new_tuple)
-        #     #print(particles[i])
-        display_particles = [(canvas.__screenX(d.coordinates[0]),canvas.__screenY(d.coordinates[1])) + d.coordinates[2] for d in particles];
-
-        print("drawParticles:"+ str(display_particles))
+        for i in range(len(particles)):
+            new_tuple = list(particles[i])
+            new_tuple[0] = self.__screenX(new_tuple[0])
+            new_tuple[1] = self.__screenY(new_tuple[1])
+            # new_tuple[2] += new_tuple[2] # not sure if we add the rotation too
+            #  new_tuple[2] = new_tuple[2][0]
+            particles[i] = (new_tuple[0], new_tuple[1], float(new_tuple[2]))
+            #print(particles[i])
+        # print("test: "+str(particles))
+        print("drawParticles:"+ str(particles))
         #x, w = initialise_particles()
 
 
@@ -144,10 +154,14 @@ class particlesMCL():
 
     def drawPath(self,line):
         canvas.drawLine(line);
+    def __screenX(self,x):
+        return (x + self.margin)*self.scale
+    def __screenY(self,y):
+        return (self.map_size + self.margin - y)*self.scale
 
 # A Canvas class for drawing a map and particles:
-# 	- it takes care of a proper scaling and coordinate transformation between
-#	  the map frame of reference (in cm) and the display (in pixels)
+#     - it takes care of a proper scaling and coordinate transformation between
+#      the map frame of reference (in cm) and the display (in pixels)
 class Canvas:
     def __init__(self,map_size=210):
         self.map_size    = map_size;    # in cm;

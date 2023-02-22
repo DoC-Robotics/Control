@@ -9,9 +9,16 @@ import particlesMCL
 import statistics
 
 BP = brickpi3.BrickPi3()
+BP.reset_all()
+left_motor = BP.PORT_B
+right_motor = BP.PORT_C
+ultrasonic_sensor = BP.PORT_2
+BP.set_sensor_type(ultrasonic_sensor, BP.SENSOR_TYPE.NXT_ULTRASONIC)
+
 NUMBER_OF_PARTICLES = 100
 map = likelihood.initialise_map()
 particles = particlesMCL.particlesMCL()
+
 
 def calc_waypoint(target,current, particles):
     """
@@ -42,8 +49,8 @@ def calc_waypoint(target,current, particles):
 
     rotate_and_move(angle_diff=rotate_amount,scale_factor_rot=rot_scale,distance=euclid_distance,sf_straight=straight_scale)
     
-    particles.genNewParticlesRotation(rotate_amount)
-    particles.genNewParticlesStraight(euclid_distance)
+    # particles.genNewParticlesRotation(rotate_amount)
+    # particles.genNewParticlesStraight(euclid_distance)
 
     return particles
 
@@ -70,6 +77,7 @@ def rotate_and_move(angle_diff,scale_factor_rot,distance,sf_straight):
     print("rotation START")
     BP.set_motor_position(left_motor,angle_diff*scale_factor_rot)
     BP.set_motor_position(right_motor,-angle_diff*scale_factor_rot)
+    particles.genNewParticlesRotation(angle_diff)
     if angle_diff<=90: time.sleep(3)
     else: time.sleep(angle_diff*2.5/90)
     print("rotation END")
@@ -81,36 +89,61 @@ def rotate_and_move(angle_diff,scale_factor_rot,distance,sf_straight):
     except IOError as error:
         print(error)
 
+    # MOVING IN STEPS OF 20CM 
     print("moving START")
-    BP.set_motor_position(left_motor,distance*sf_straight)
-    BP.set_motor_position(right_motor,distance*sf_straight)
-
-    if distance<=10: time.sleep(2.5)
-    else: time.sleep(distance*2.2/10)
+    steps_dist = 20
+    num_twenty = math.floor(distance/20)
+    dist_remainder = distance%20
+    for i in range(1,num_twenty+1):
+        dist = i*steps_dist
+        print("steps dist:", dist)
+        BP.set_motor_position(left_motor + right_motor,dist*sf_straight)
+        # BP.set_motor_position(right_motor,dist*sf_straight)
+        while BP.get_motor_status(left_motor)[2] < math.floor(dist*sf_straight):
+            # print(BP.get_motor_status(left_motor), dist*sf_straight)
+            time.sleep(1)
+        particles.genNewParticlesStraight(steps_dist)
+        time.sleep(0.5)
     print("moving END")
+    
+    print("remainder dist: ", dist_remainder, " - total dist move: ", steps_dist*num_twenty+dist_remainder)
+    BP.set_motor_position(left_motor + right_motor,(steps_dist*num_twenty+dist_remainder)*sf_straight)
+    # BP.set_motor_position(right_motor,(steps_dist*num_twenty+dist_remainder)*sf_straight)
+    particles.genNewParticlesStraight(dist_remainder)
+    time.sleep(1)
+
     return
 
 def distance_measured():
-    ultrasonic_sensor = BP.PORT_1
-    BP.set_sensor_type(ultrasonic_sensor, BP.SENSOR_TYPE.NXT_ULTRASONIC)
     readings = []
     # target_distance = 20 #cm
+    ultrasonic_sensor = BP.PORT_2
+    BP.set_sensor_type(ultrasonic_sensor, BP.SENSOR_TYPE.NXT_ULTRASONIC)
 
     #   take measurement of sonar for 2 seconds and take median
-    t_end = time.time() + 2 # 2 seconds
+    t_end = time.time() + 6 # 2 seconds
     while time.time() < t_end:
         try:
             ultrasonicState = BP.get_sensor(ultrasonic_sensor)
             readings.append(ultrasonicState)
-            # print("ultrasonic reading at time ",time.time()," : ", ultrasonicState)
+            print("ultrasonic reading at time ",time.time()," : ", ultrasonicState)
         except brickpi3.SensorError as error:
             print(error)
+            time.sleep(0.25)
+            BP.reset_all()
+            ultrasonic_sensor = BP.PORT_2
+            BP.set_sensor_type(ultrasonic_sensor, BP.SENSOR_TYPE.NXT_ULTRASONIC)
 
-    median_reading = statistics.median(readings)
-    print("Real reading to the facing wall: ", median_reading)
-    # NO OBSTACLE AVOIDANCE, AS NOT NEEDED IN THE GIVEN PATH
-    # median_reading only used for the updating of MCL particles
-    return median_reading
+        time.sleep(0.2)
+
+    if len(readings) == 0:
+        return distance_measured()
+    else:
+        median_reading = statistics.median(readings)
+        print("Real reading to the facing wall: ", median_reading)
+        # NO OBSTACLE AVOIDANCE, AS NOT NEEDED IN THE GIVEN PATH
+        # median_reading only used for the updating of MCL particles
+        return median_reading
 
 def estimated_position_and_orientation(particles):
     est_x, est_y, est_theta = 0,0,0
@@ -134,7 +167,7 @@ if __name__=="__main__":
                 start_flag = False
                 particles.initialise_at(path[0][0],path[0][1])
             else:
-                print("Initilaised coordinates: ", particles.coordinates[0][0], particles.coordinates[0][1])
+                print("(Before weight estimation) coordinates: ", particles.coordinates[0][0], particles.coordinates[0][1])
                 x, y, theta = estimated_position_and_orientation(particles)
                 print("current coords: ",x,y,theta)
                 print("Coordinates you want to get to:", path[path_index])
@@ -151,7 +184,10 @@ if __name__=="__main__":
                 
                 # Resampling a new set of particles
                 particles = normalising_resampling3_2.normalising_and_resampling(spread_particles)
-            time.sleep(2)
+                print("---- Resampled particles printed")
+                print(particles.convertNPtoTuples(particles))
+                particles.printParticles(particles.convertNPtoTuples(particles))
+            time.sleep(3)
 
     ######### WITH USER INPUT    
     # try:
