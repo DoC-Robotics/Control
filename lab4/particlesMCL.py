@@ -2,6 +2,7 @@ import math
 import random
 import numpy as np
 import time
+import likelihood
 
 NUMBER_OF_PARTICLES = 100
 
@@ -56,8 +57,8 @@ class particlesMCL():
         """
 
         mu = 0
-        sigma_e = D*0.025 #initially 0.05    
-        sigma_f = 0.025 #initially 0.05
+        sigma_e = D*0.05 #initially 0.05    
+        sigma_f = 0.05 #initially 0.05
         
         particles = []
 
@@ -77,7 +78,7 @@ class particlesMCL():
             self.coordinates[i][1] = y_new
             self.coordinates[i][2] = theta_new
         
-        print("---PARTICLES MCL debug theta Straight:",theta_new," f value",f)
+        # print("---PARTICLES MCL debug theta Straight:",theta_new," f value",f)
         self.printParticles(particles)
 
 
@@ -87,13 +88,13 @@ class particlesMCL():
             return: None
         """
         mu = 0
-        sigma_g = 0.00125*alpha #inititally 0.0025
-        g = random.gauss(mu, sigma_g)
+        sigma_g = 0.1*alpha
 
         particles = []
         for i in range(NUMBER_OF_PARTICLES):    # _ is cooler than i when i is not used
             x_new = self.coordinates[i][0]
             y_new = self.coordinates[i][1]
+            g = random.gauss(mu, sigma_g)
 
             theta_new = self.coordinates[i][2] + alpha + g
             theta_new = self.wrapAngleTo180(theta_new)
@@ -103,8 +104,8 @@ class particlesMCL():
             self.coordinates[i][0] = x_new
             self.coordinates[i][1] = y_new
             self.coordinates[i][2] = theta_new
-        print("James Experiment alpha, g",alpha,g)
-        print("James exp last theta",theta_new)    
+        # print("James Experiment alpha, g",alpha,g)
+        # print("James exp last theta",theta_new)    
         self.printParticles(particles)
 
     def wrapAngleTo180(self, theta_new):
@@ -148,6 +149,16 @@ class particlesMCL():
         # print("test: "+str(particles))
         print("drawParticles:"+ str(particles))
         #x, w = initialise_particles()
+
+    def printPaths(self,particles, map):
+        # printing the straight path of the particle
+        for particle_index in range(NUMBER_OF_PARTICLES):
+            distance_measurement = likelihood.get_distance_to_wall(map, particles, particle_index)
+            
+            get_cos = distance_measurement*math.cos(particles.coordinates[particle_index][2] * math.pi/180)
+            get_sin = distance_measurement*math.sin(particles.coordinates[particle_index][2] * math.pi/180)
+
+            particles.drawPath((particles.coordinates[particle_index][0], particles.coordinates[particle_index][1], particles.coordinates[particle_index][0]+get_cos, particles.coordinates[particle_index][1]+get_sin))   
 
 
     # def update_particles(self, coordinates, weights, motion):

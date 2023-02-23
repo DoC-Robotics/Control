@@ -103,17 +103,17 @@ def get_distance_to_wall(map, particles, particle_index):
                     shortest_distance = distance
                     closest_facing_wall = map.walls[i]
             
-    # printing the straight path of the particle
-    get_cos = shortest_distance*math.cos(particles.coordinates[particle_index][2] * math.pi/180)
-    get_sin = shortest_distance*math.sin(particles.coordinates[particle_index][2] * math.pi/180)
+    # # printing the straight path of the particle
+    # get_cos = shortest_distance*math.cos(particles.coordinates[particle_index][2] * math.pi/180)
+    # get_sin = shortest_distance*math.sin(particles.coordinates[particle_index][2] * math.pi/180)
 
-    particles.drawPath((particles.coordinates[particle_index][0], particles.coordinates[particle_index][1], particles.coordinates[particle_index][0]+get_cos, particles.coordinates[particle_index][1]+get_sin))   
+    # particles.drawPath((particles.coordinates[particle_index][0], particles.coordinates[particle_index][1], particles.coordinates[particle_index][0]+get_cos, particles.coordinates[particle_index][1]+get_sin))   
 
     # print("Particle coordinates: ",particles.coordinates[particle_index][0]," ", particles.coordinates[particle_index][1]," ", particles.coordinates[particle_index][2] )
     # print("Shortest distance ", shortest_distance)
     # print("Closest Wall: ", closest_facing_wall)
 
-    return shortest_distance, closest_facing_wall
+    return shortest_distance
 
 def get_likelihood_function(estimated_distance, measured_distance, standard_deviation):
     ''''
@@ -133,7 +133,7 @@ def get_likelihood_function(estimated_distance, measured_distance, standard_devi
 def calculate_likelihood(particles, particle_index,  measured_distance, map):
 
     #gets distance to closest wall and finds the closest wall
-    estimated_distance, closest_wall = get_distance_to_wall(map, particles, particle_index)
+    estimated_distance = get_distance_to_wall(map, particles, particle_index)
     
     standard_deviation = 2.5 #22.5cm standard deviation
     # Likelihood ready to be multiplied with weight
@@ -174,7 +174,7 @@ if __name__=="__main__":
         'distance': None
     }
     for i in range(particles.n):
-        shortest_distance, closest_wall = get_distance_to_wall(map, particles.data[i])
+        shortest_distance = get_distance_to_wall(map, particles.data[i])
         # sonar measured distance (real) , example reading 30 cm
         read_val = 30
         likelihood_to_be_multiplied = calculate_likelihood(particles.data[i], read_val, map)
