@@ -11,6 +11,12 @@ import statistics
 BP = brickpi3.BrickPi3()
 BP.reset_all()
 
+'''
+NOTES:
+PLease check function characterize location
+
+'''
+
 def initialize_brickpi():
     left_motor = BP.PORT_B
     right_motor = BP.PORT_C
