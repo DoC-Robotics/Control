@@ -96,6 +96,7 @@ def characterize_location(ls):
     print("TODO:    You should implement the function that captures a signature.")
     #rotates by rotation amount each times
     amount_per_rotation = 360/len(ls.sig)
+    rotation_scale_map = 220.0/90.0
 
     #reset 
     try:
@@ -107,10 +108,11 @@ def characterize_location(ls):
     print("In function - robot movement")
     print("rotation START")
 
-    for i in range(len(ls.sig)):
+    for i in range(1,len(ls.sig)+1):
         #generates between 0 and 255. 
-        BP.set_motor_position(left_motor,angle_diff*scale_factor_rot)
-        BP.set_motor_position(right_motor,-angle_diff*scale_factor_rot)
+        target_angle = i*amount_per_rotation
+        BP.set_motor_position(left_motor,target_angle*rotation_scale_map)
+        BP.set_motor_position(right_motor,-target_angle*rotation_scale_map)
 
         ls.sig[i] = random.randint(0, 255)
 
