@@ -7,6 +7,10 @@ import os
 import time     # import the time library for the sleep function
 import brickpi3  # import the BrickPi3 drivers
 import math
+BP = brickpi3.BrickPi3()
+BP.reset_all()
+
+
 left_motor = BP.PORT_B
 right_motor = BP.PORT_C
 BP.set_motor_limits(left_motor, 50, 200)
