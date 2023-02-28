@@ -107,8 +107,9 @@ class SignatureContainer():
 def characterize_location(ls):
     print("TODO:    You should implement the function that captures a signature.")
     #rotates by rotation amount each times
-    amount_per_rotation = 360/len(ls.sig)
-    rotation_scale_map = 220.0/90.0
+    rotation_scale_map = 226.0/90.0
+    amount_per_rotation = 360/len(ls.sig)*(rotation_scale_map)
+
 
     #reset 
     try:
@@ -120,30 +121,42 @@ def characterize_location(ls):
     print("In function - robot movement")
     print("rotation START")
 
-    for i in range(1,len(ls.sig)+1):
+    for i in range(0,len(ls.sig)):
         #generates between 0 and 255. 
         BP.offset_motor_encoder( left_motor, BP.get_motor_encoder(left_motor)) 
         BP.offset_motor_encoder( right_motor, BP.get_motor_encoder(right_motor)) 
-        target_angle = i*amount_per_rotation
 
         #set the rotation amount.
         BP.set_motor_position(left_motor,amount_per_rotation)
-        BP.set_motor_position(right_motor,amount_per_rotation)
-
-        ls.sig[i] = distance_measured()
-        
+        BP.set_motor_position(right_motor,-amount_per_rotation)
         time.sleep(0.7)
 
+
+        ls.sig[i] = distance_measured()
+        print("location signature",ls.sig)
+
+        time.sleep(0.1)
+    #complete 1 more rotation I think TOCHECK!!!!!
+    BP.set_motor_position(left_motor,amount_per_rotation)
+    BP.set_motor_position(right_motor,-amount_per_rotation)
+
+    print("loop exit")
+    pass
 # FILL IN: compare two signatures
 def compare_signatures(ls1, ls2):
-    dist = 0
+    curr_diff = 0
     print("TODO:    You should implement the function that compares two signatures.")
-    return dist
+    for i in range(len(ls1.sig)):
+        signature_1 = ls1.sig[i]
+        signature_2 = ls2.sig[i]
+        curr_diff += (signature_2-signature_1)**2
+
+    return curr_diff
 
 def distance_measured():
     curr_time = time.time()
     elapse_time = 0
-    while elapse_time<1.5:
+    while elapse_time<1.0:
         readings = []
         try:
             #will 
@@ -197,14 +210,24 @@ def learn_location():
 #      actual characterization is the smallest.
 # 4.   Display the index of the recognized location on the screen
 def recognize_location():
-    ls_obs = LocationSignature();
+    ls_obs = LocationSignature(no_bins = bin_number);
     characterize_location(ls_obs);
-
+    min_dist = float('inf')
+    best_idx = 0
     # FILL IN: COMPARE ls_read with ls_obs and find the best match
     for idx in range(signatures.size):
         print("STATUS:  Comparing signature " + str(idx) + " with the observed signature.")
         ls_read = signatures.read(idx);
         dist    = compare_signatures(ls_obs, ls_read)
+        if dist<min_dist:
+            min_dist = dist
+            best_idx = idx
+    
+    #return 
+    print("comparison completed, best index:",best_idx,
+          "Best Distance:",min_dist)
+    
+    return best_idx
 
         
 
