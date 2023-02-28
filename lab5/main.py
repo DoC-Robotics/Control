@@ -7,17 +7,25 @@ import os
 import time     # import the time library for the sleep function
 import brickpi3  # import the BrickPi3 drivers
 import math
+import statistics
 BP = brickpi3.BrickPi3()
 BP.reset_all()
+
+def initialize_brickpi():
+    left_motor = BP.PORT_B
+    right_motor = BP.PORT_C
+    BP.set_motor_limits(left_motor, 50, 200)
+    BP.set_motor_limits(right_motor, 50, 200)
+    ultrasonic_sensor = BP.PORT_2
+    BP.set_sensor_type(ultrasonic_sensor, BP.SENSOR_TYPE.NXT_ULTRASONIC)
+
+
+    #   reset motor states
 
 
 left_motor = BP.PORT_B
 right_motor = BP.PORT_C
-BP.set_motor_limits(left_motor, 50, 200)
-BP.set_motor_limits(right_motor, 50, 200)
-
-    #   reset motor states
-
+ultrasonic_sensor = BP.PORT_2
 
 
 bin_number = 30
@@ -114,17 +122,54 @@ def characterize_location(ls):
 
     for i in range(1,len(ls.sig)+1):
         #generates between 0 and 255. 
+        BP.offset_motor_encoder( left_motor, BP.get_motor_encoder(left_motor)) 
+        BP.offset_motor_encoder( right_motor, BP.get_motor_encoder(right_motor)) 
         target_angle = i*amount_per_rotation
-        BP.set_motor_position(left_motor,target_angle*rotation_scale_map)
-        BP.set_motor_position(right_motor,-target_angle*rotation_scale_map)
 
-        ls.sig[i] = random.randint(0, 255)
+        #set the rotation amount.
+        BP.set_motor_position(left_motor,amount_per_rotation)
+        BP.set_motor_position(right_motor,amount_per_rotation)
+
+        ls.sig[i] = distance_measured()
+        
+        time.sleep(0.7)
 
 # FILL IN: compare two signatures
 def compare_signatures(ls1, ls2):
     dist = 0
     print("TODO:    You should implement the function that compares two signatures.")
     return dist
+
+def distance_measured():
+    curr_time = time.time()
+    elapse_time = 0
+    while elapse_time<1.5:
+        readings = []
+        try:
+            #will 
+            ultrasonicState = BP.get_sensor(ultrasonic_sensor)
+            readings.append(ultrasonicState)
+            time.sleep(0.1)
+
+        except:
+            BP.reset_all()
+            initialize_brickpi()
+            time.sleep(0.1)
+        #get the elapsed time
+        elapse_time = time.time()-curr_time
+
+    if len(readings) == 0:
+        #retake measurements
+        return distance_measured()
+    else:
+        median_reading = statistics.median(readings)
+        print("Real reading to the facing wall: ", median_reading)
+        # NO OBSTACLE AVOIDANCE, AS NOT NEEDED IN THE GIVEN PATH
+        # median_reading only used for the updating of MCL particles
+        return median_reading
+
+
+
 
 # This function characterizes the current location, and stores the obtained 
 # signature into the next available file.
@@ -139,6 +184,7 @@ def learn_location():
         print("Please remove some loc_%%.dat files.\n")
         return
     
+    #writes location signature to an index file that is free. 
     signatures.save(ls,idx)
     print("STATUS:  Location " + str(idx) + " learned and saved.")
 
@@ -159,6 +205,10 @@ def recognize_location():
         print("STATUS:  Comparing signature " + str(idx) + " with the observed signature.")
         ls_read = signatures.read(idx);
         dist    = compare_signatures(ls_obs, ls_read)
+
+        
+
+            
 
 # Prior to starting learning the locations, it should delete files from previous
 # learning either manually or by calling signatures.delete_loc_files(). 
