@@ -10,7 +10,7 @@ import math
 import statistics
 BP = brickpi3.BrickPi3()
 BP.reset_all()
-
+import numpy as np
 '''
 NOTES:
 PLease check function characterize location
@@ -34,10 +34,10 @@ right_motor = BP.PORT_C
 ultrasonic_sensor = BP.PORT_2
 
 
-bin_number = 30
+bin_number = 36
 # Location signature class: stores a signature characterizing one location
 class LocationSignature:
-    def __init__(self, no_bins = 360):
+    def __init__(self, no_bins = 36):
         self.sig = [0] * no_bins
         
     def print_signature(self):
@@ -109,11 +109,13 @@ class SignatureContainer():
         
         return ls
         
-# FILL IN: spin robot or sonar to capture a signature and store it in ls
 def characterize_location(ls):
-    print("TODO:    You should implement the function that captures a signature.")
+    '''
+    This takes a class of ls corresponding to a signature container. 
+    The function primarily will update the array of signature ls.sig[] and  
+    '''
     #rotates by rotation amount each times
-    rotation_scale_map = 226.0/90.0
+    rotation_scale_map = 222.0/90.0
     amount_per_rotation = 360/len(ls.sig)*(rotation_scale_map)
 
 
@@ -129,13 +131,18 @@ def characterize_location(ls):
 
     for i in range(0,len(ls.sig)):
         #generates between 0 and 255. 
-        BP.offset_motor_encoder( left_motor, BP.get_motor_encoder(left_motor)) 
-        BP.offset_motor_encoder( right_motor, BP.get_motor_encoder(right_motor)) 
+        #reset 
+        try:
+            BP.offset_motor_encoder( left_motor, BP.get_motor_encoder(left_motor)) 
+            BP.offset_motor_encoder( right_motor, BP.get_motor_encoder(right_motor)) 
+        except IOError as error:
+            print(error)
 
-        #set the rotation amount.
-        BP.set_motor_position(left_motor,amount_per_rotation)
-        BP.set_motor_position(right_motor,-amount_per_rotation)
-        time.sleep(0.7)
+        #set the rotation amount towards left.
+        BP.set_motor_position(left_motor,-amount_per_rotation)
+        BP.set_motor_position(right_motor,amount_per_rotation)
+        while (BP.get_motor_status(left_motor)[2] < -amount_per_rotation): 
+            time.sleep(0.1)
 
 
         ls.sig[i] = distance_measured()
@@ -143,8 +150,8 @@ def characterize_location(ls):
 
         time.sleep(0.1)
     #complete 1 more rotation I think TOCHECK!!!!!
-    BP.set_motor_position(left_motor,amount_per_rotation)
-    BP.set_motor_position(right_motor,-amount_per_rotation)
+    #BP.set_motor_position(left_motor,-amount_per_rotation)
+    #BP.set_motor_position(right_motor,amount_per_rotation)
 
     print("loop exit")
     pass
@@ -159,7 +166,12 @@ def compare_signatures(ls1, ls2):
 
     return curr_diff
 
+
 def distance_measured():
+    '''
+    Deduce the total distance to wall as measured by the ultrasound sensors. 
+    '''
+    #time will tick by
     curr_time = time.time()
     elapse_time = 0
     while elapse_time<1.0:
@@ -190,9 +202,10 @@ def distance_measured():
 
 
 
-# This function characterizes the current location, and stores the obtained 
-# signature into the next available file.
 def learn_location():
+    ''' 
+    This function characterizes the current location, and stores the obtained signature into the next available file.
+    '''
     #take a total of 30 signatures starting from angle of 0 degrees. 
     ls = LocationSignature(no_bins = bin_number)
     characterize_location(ls)
@@ -207,6 +220,38 @@ def learn_location():
     signatures.save(ls,idx)
     print("STATUS:  Location " + str(idx) + " learned and saved.")
 
+def convert_signature_to_hist(location,mode='normal'):
+    '''
+    
+    Will take a signature with values between 0-256 and then correspondingly convert the signature to a depth based histogram.
+
+    '''
+    bin_count = 256//5 #determines number of bins based on max depth of 256 
+    depth_hist = [0 for i in range(bin_count)]
+
+    print("debug location",location)
+    print("debug signature",location.sig)
+    
+    if (mode=="normal"):
+        loc_sig = location.sig
+    else:
+        loc_sig = location 
+
+
+    for val in loc_sig:
+        #gets the relevant value in the histogram
+        bin = val//5
+        #not fastest way of doing things but can prevent errors. 
+        curr_bin_val = depth_hist[bin]
+        depth_hist[bin] = curr_bin_val+1
+    
+    #will return a depth histogram. 
+    return depth_hist
+
+
+
+
+
 # This function tries to recognize the current location.
 # 1.   Characterize current location
 # 2.   For every learned locations
@@ -216,6 +261,9 @@ def learn_location():
 #      actual characterization is the smallest.
 # 4.   Display the index of the recognized location on the screen
 def recognize_location():
+    '''
+    This function will compare the current signature to all signatures whcih are present and will determine accordingly which signature the location most accurately corresponds to. 
+    '''
     ls_obs = LocationSignature(no_bins = bin_number);
     characterize_location(ls_obs);
     min_dist = float('inf')
@@ -223,8 +271,18 @@ def recognize_location():
     # FILL IN: COMPARE ls_read with ls_obs and find the best match
     for idx in range(signatures.size):
         print("STATUS:  Comparing signature " + str(idx) + " with the observed signature.")
-        ls_read = signatures.read(idx);
+        ls_read = signatures.read(idx).sig;#reads a file which can be converted to histograms. 
+        
+        print(ls_read)
+        #converts the angle against depth values to depth histograms with a depth of 5 per bin. 
+        ls_read = convert_signature_to_hist(ls_read,mode='diff')
+        print("line 278 reached")
+        ls_obs = convert_signature_to_hist(ls_obs)
+
+        #gets the squared difference for every location. 
         dist    = compare_signatures(ls_obs, ls_read)
+
+        #save and denote the best locations. 
         if dist<min_dist:
             min_dist = dist
             best_idx = idx
@@ -235,8 +293,8 @@ def recognize_location():
     
     return best_idx
 
-        
-
+       
+       
             
 
 # Prior to starting learning the locations, it should delete files from previous
