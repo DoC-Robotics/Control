@@ -9,7 +9,7 @@ import particlesMCL
 import statistics
 import math
 import random
-
+import histogram
 
 BP = brickpi3.BrickPi3()
 BP.reset_all()
@@ -19,6 +19,7 @@ ultrasonic_sensor = BP.PORT_2
 BP.set_sensor_type(ultrasonic_sensor, BP.SENSOR_TYPE.NXT_ULTRASONIC)
 
 NUMBER_OF_PARTICLES = 200
+NUM_OF_BINS = 10
 rot_scale = 220.0 / 90.0  # per 1 degree #218
 straight_scale = 640.0 / 40.0  # per 1 cm
 map = likelihood.initialise_map()
@@ -149,21 +150,18 @@ def distance_measured():
     ultrasonic_sensor = BP.PORT_2
     BP.set_sensor_type(ultrasonic_sensor, BP.SENSOR_TYPE.NXT_ULTRASONIC)
 
-    #   take measurement of sonar for 2 seconds and take median
-    t_end = time.time() + 0.5  # 2 seconds
-    while time.time() < t_end:
+    while len(readings) < 5:
         try:
             ultrasonicState = BP.get_sensor(ultrasonic_sensor)
             readings.append(ultrasonicState + length_rover)
-            # print("ultrasonic reading at time ",time.time()," : ", ultrasonicState + length_rover)
+            print(
+                "ultrasonic reading: ",
+                ultrasonicState + length_rover,
+            )
         except brickpi3.SensorError as error:
-            print(error)
-            time.sleep(0.1)
             BP.reset_all()
             ultrasonic_sensor = BP.PORT_2
             BP.set_sensor_type(ultrasonic_sensor, BP.SENSOR_TYPE.NXT_ULTRASONIC)
-
-        time.sleep(0.1)
 
     if len(readings) == 0:
         return distance_measured()
@@ -198,25 +196,24 @@ def estimated_position_and_orientation(particles):
     return est_x[0], est_y[0], est_theta
 
 
-def find_initial_position(particles, paths):
-    for i in range(6):
-        distance_measurement = distance_measured()
-        likelihood.update_particles_weights(particles, distance_measurement, map)
-        particles = normalising_resampling.normalising_and_resampling(particles)
-        rotate_rover(60, particles)
-    x, y, theta = estimated_position_and_orientation(particles)
-    nearest_point = None
-    nearest_distance = float("inf")
-    for i, coord in enumerate(paths):
-        distance = math.sqrt((coord[0] - x) ** 2 + (coord[1] - y) ** 2)
-        if distance < nearest_distance:
-            nearest_distance = distance
-            nearest_point = i
-    return nearest_point, particles
+def find_initial_position(particles, ls, signature, path):
+    # for i in range(15):
+    #     distance_measurement = distance_measured()
+    #     ls.sig[i] = distance_measurement
+    #     likelihood.update_particles_weights(particles, distance_measurement, map)
+    #     particles = normalising_resampling.normalising_and_resampling(particles)
+    #     rotate_rover(24, particles)
+    index = histogram.recognize_location(ls, signature)
+    # FILL IN: COMPARE ls_read with ls_obs and find the best match
+    distance_measurement = distance_measured()
+    particles.initialise_at(path[index][0], path[index][1])
+    likelihood.update_particles_weights(particles, distance_measurement, map)
+    particles = normalising_resampling.normalising_and_resampling(particles)
+    return index, particles
 
 
 def find_initial_orientation(particles):
-    for i in range(4):
+    for i in range(10):
         distance_measurement = distance_measured()
         likelihood.update_particles_weights(particles, distance_measurement, map)
         rotate_rover(90, particles)
@@ -237,12 +234,14 @@ if __name__ == "__main__":
     particles = particlesMCL.particlesMCL()
 
     particles.initalise_challenge(path)
-    initialise_index, particles = find_initial_position(particles, path)
+    ls = histogram.LocationSignature()
+    signature = histogram.SignatureContainer()
+    initialise_index, particles = find_initial_position(particles, ls, signature, path)
     particles.printParticles(particles.convertNPtoTuples(particles))
     particles.printPaths(particles, map)
     path_index = initialise_index
     print("STARTING AT: ", path_index)
-    particles.printPaths(particles, map)
+
     ###### LOOPING THROUGH THE GIVEN PATH
     while True:
         try:

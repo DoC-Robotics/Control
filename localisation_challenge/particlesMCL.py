@@ -100,7 +100,7 @@ class particlesMCL:
         return: None
         """
         mu = 0
-        sigma_g = 0.02 * alpha
+        sigma_g = 0.03 * alpha
 
         particles = []
         for i in range(NUMBER_OF_PARTICLES):  # _ is cooler than i when i is not used
