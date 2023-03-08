@@ -98,7 +98,7 @@ class SignatureContainer:
 
 
 # FILL IN: spin robot or sonar to capture a signature and store it in ls
-def characterize_location(ls, particles, map):
+def characterize_location(ls):
     print("TODO:    You should implement the function that captures a signature.")
     rotation_scale_map = 226.0 / 90.0
     amount_per_rotation = 360 / len(ls.sig) * (rotation_scale_map)
@@ -122,21 +122,10 @@ def characterize_location(ls, particles, map):
         BP.set_motor_position(left_motor, amount_per_rotation * 1.05)
         BP.set_motor_position(right_motor, -amount_per_rotation * 1.05)
         time.sleep(0.1)
-        particles.genNewParticlesRotation(amount_per_rotation)
         ls.sig[i] = main.distance_measured()
 
-        print("location signature", ls.sig)
-        likelihood.update_particles_weights(particles, ls.sig[i], map)
-        if i % 5 == 0:
-            particles = normalising_resampling.normalising_and_resampling(particles)
-
         time.sleep(0.1)
-    # complete 1 more rotation I think TOCHECK!!!!!
-    BP.set_motor_position(left_motor, amount_per_rotation)
-    BP.set_motor_position(right_motor, -amount_per_rotation)
-    particles.genNewParticlesRotation(amount_per_rotation)
     print("loop exit")
-    return particles
 
 
 def convert_signature_to_hist(location):
@@ -180,6 +169,24 @@ def compare_historgrams(his1, his2):
     return curr_diff
 
 
+def find_orientation(ls1, ls2_obs):
+    lowest_error_offset = 0
+    lowest_error = float("inf")
+    for i in range(len(ls1.sig)):
+        curr_diff = 0
+        for j in range(len(ls1.sig)):
+            signature_1 = ls1.sig[j]
+            signature_2 = ls2_obs.sig[(j + i) % 15]
+            curr_diff += (signature_2 - signature_1) ** 2
+        if curr_diff < lowest_error:
+            lowest_error = curr_diff
+            lowest_error_offset = i
+    if lowest_error_offset * -24 < -180:
+        return lowest_error_offset * -24 + 360
+    else:
+        return lowest_error_offset * -24
+
+
 # This function characterizes the current location, and stores the obtained
 # signature into the next available file.
 def learn_location():
@@ -206,7 +213,7 @@ def learn_location():
 # 4.   Display the index of the recognized location on the screen
 def recognize_location(ls_obs, signatures, particles, map):
     best_idx = 0
-    particles = characterize_location(ls_obs, particles, map)
+    characterize_location(ls_obs)
     min_dist = float("inf")
     # FILL IN: COMPARE ls_read with ls_obs and find the best match
     for idx in range(signatures.size):
@@ -220,11 +227,10 @@ def recognize_location(ls_obs, signatures, particles, map):
         if dist < min_dist:
             min_dist = dist
             best_idx = idx
-
     # return
     print("comparison completed, best index:", best_idx, "Best Distance:", min_dist)
 
-    return best_idx, particles
+    return best_idx, particles, ls_obs
 
 
 def recognize_location2():
@@ -261,4 +267,4 @@ def recognize_location2():
 # recognize one of them, if locations have already been learned
 
 # signatures = SignatureContainer(5)
-# recognize_location2()
+# learn_location()

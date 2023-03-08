@@ -51,11 +51,7 @@ def calc_waypoint(target, current):
 
 def move_rover(rotate_amount, euclid_distance, particles):
     # update particle weghts
-    distance_measurement = distance_measured()
-    particles = likelihood.update_particles_weights(
-        particles, distance_measurement, map
-    )
-    particles = normalising_resampling.normalising_and_resampling(particles)
+
     left_motor = BP.PORT_B
     right_motor = BP.PORT_C
     BP.set_motor_limits(left_motor, 50, 200)
@@ -203,25 +199,19 @@ def find_initial_position(particles, ls, signature, path):
     #     likelihood.update_particles_weights(particles, distance_measurement, map)
     #     particles = normalising_resampling.normalising_and_resampling(particles)
     #     rotate_rover(24, particles)
-    index, particles = histogram.recognize_location(ls, signature, particles, map)
+    index, particles, ls = histogram.recognize_location(ls, signature, particles, map)
     # FILL IN: COMPARE ls_read with ls_obs and find the best match
 
-    particles.update_weight_to_majority(path[index][0], path[index][1])
-    for i in range(100):
-        print(
-            "Particles After Filtering:",
-            particles.coordinates[i][0],
-            particles.coordinates[i][1],
-            particles.weights[i],
-        )
-    return index, particles
+    return index, particles, ls
 
 
 def find_initial_orientation(particles):
-    for i in range(10):
+    for i in range(5):
+        rotate_rover(72, particles)
+        particles.genNewParticlesRotation(72)
         distance_measurement = distance_measured()
         likelihood.update_particles_weights(particles, distance_measurement, map)
-        rotate_rover(90, particles)
+
         particles = normalising_resampling.normalising_and_resampling(particles)
     return particles
 
@@ -241,7 +231,15 @@ if __name__ == "__main__":
     particles.initalise_challenge(path)
     ls = histogram.LocationSignature()
     signature = histogram.SignatureContainer()
-    initialise_index, particles = find_initial_position(particles, ls, signature, path)
+    initialise_index, particles, ls = find_initial_position(
+        particles, ls, signature, path
+    )
+    # particles.initialise_at(path[initialise_index][0], path[initialise_index][1])
+    orientation = histogram.find_orientation(signature.read(initialise_index), ls)
+    particles.new_initialization(
+        path[initialise_index][0], path[initialise_index][1], orientation
+    )
+    # particles = find_initial_orientation(particles)
     particles.printParticles(particles.convertNPtoTuples(particles))
     particles.printPaths(particles, map)
     path_index = initialise_index
@@ -250,17 +248,12 @@ if __name__ == "__main__":
     ###### LOOPING THROUGH THE GIVEN PATH
     while True:
         try:
-            x, y, theta = estimated_position_and_orientation(particles)
             x_goal, y_goal = (
                 path[(path_index + 1) % 5][0],
                 path[(path_index + 1) % 5][1],
             )
-            
-            print("X_goal, y_goal, Path Index", x_goal, y_goal, (path_index + 1) % 5)
-            if abs(x_goal - x) < 5 and abs(y_goal - y) < 5:
-                path_index += 1
-                time.sleep(1)
 
+            print("X_goal, y_goal, Path Index", x_goal, y_goal, (path_index + 1) % 5)
             # update particle weghts
             distance_measurement = distance_measured()
             particles = likelihood.update_particles_weights(

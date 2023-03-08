@@ -47,7 +47,7 @@ class particlesMCL:
         for i in range(NUMBER_OF_PARTICLES):
             self.coordinates[i][0] = x
             self.coordinates[i][1] = y
-            self.coordinates[i][2] = theta
+            self.coordinates[i][2] = theta + random.gauss(0, 7.5)
             self.weights[i] = 1 / NUMBER_OF_PARTICLES
 
     def initalise_challenge(self, path):
@@ -93,7 +93,7 @@ class particlesMCL:
 
         mu = 0
         sigma_e = D * 0.01  # initially 0.05
-        sigma_f = 0.002  # initially 0.05
+        sigma_f = 0.005  # initially 0.05
 
         particles = []
 
@@ -126,7 +126,7 @@ class particlesMCL:
         return: None
         """
         mu = 0
-        sigma_g = 0.025 * alpha
+        sigma_g = 0.05 * alpha
 
         particles = []
         for i in range(NUMBER_OF_PARTICLES):  # _ is cooler than i when i is not used
