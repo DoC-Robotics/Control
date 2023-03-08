@@ -7,6 +7,8 @@ import os
 import time
 import brickpi3
 import main
+import likelihood
+import normalising_resampling
 
 
 BP = brickpi3.BrickPi3()
@@ -96,7 +98,7 @@ class SignatureContainer:
 
 
 # FILL IN: spin robot or sonar to capture a signature and store it in ls
-def characterize_location(ls):
+def characterize_location(ls, particles, map):
     print("TODO:    You should implement the function that captures a signature.")
     rotation_scale_map = 226.0 / 90.0
     amount_per_rotation = 360 / len(ls.sig) * (rotation_scale_map)
@@ -117,19 +119,24 @@ def characterize_location(ls):
         BP.offset_motor_encoder(right_motor, BP.get_motor_encoder(right_motor))
 
         # set the rotation amount.
-        BP.set_motor_position(left_motor, amount_per_rotation)
-        BP.set_motor_position(right_motor, -amount_per_rotation)
-        time.sleep(0.7)
-
+        BP.set_motor_position(left_motor, amount_per_rotation * 1.05)
+        BP.set_motor_position(right_motor, -amount_per_rotation * 1.05)
+        time.sleep(0.1)
+        particles.genNewParticlesRotation(amount_per_rotation)
         ls.sig[i] = main.distance_measured()
+
         print("location signature", ls.sig)
+        likelihood.update_particles_weights(particles, ls.sig[i], map)
+        if i % 5 == 0:
+            particles = normalising_resampling.normalising_and_resampling(particles)
 
         time.sleep(0.1)
     # complete 1 more rotation I think TOCHECK!!!!!
     BP.set_motor_position(left_motor, amount_per_rotation)
     BP.set_motor_position(right_motor, -amount_per_rotation)
-
+    particles.genNewParticlesRotation(amount_per_rotation)
     print("loop exit")
+    return particles
 
 
 def convert_signature_to_hist(location):
@@ -197,9 +204,9 @@ def learn_location():
 # 3.   Retain the learned location whose minimum distance with
 #      actual characterization is the smallest.
 # 4.   Display the index of the recognized location on the screen
-def recognize_location(ls_obs, signatures):
+def recognize_location(ls_obs, signatures, particles, map):
     best_idx = 0
-    characterize_location(ls_obs)
+    particles = characterize_location(ls_obs, particles, map)
     min_dist = float("inf")
     # FILL IN: COMPARE ls_read with ls_obs and find the best match
     for idx in range(signatures.size):
@@ -217,7 +224,7 @@ def recognize_location(ls_obs, signatures):
     # return
     print("comparison completed, best index:", best_idx, "Best Distance:", min_dist)
 
-    return best_idx
+    return best_idx, particles
 
 
 def recognize_location2():

@@ -4,7 +4,7 @@ import numpy as np
 import time
 import likelihood
 
-NUMBER_OF_PARTICLES = 200
+NUMBER_OF_PARTICLES = 100
 
 
 class particlesMCL:
@@ -51,11 +51,37 @@ class particlesMCL:
             self.weights[i] = 1 / NUMBER_OF_PARTICLES
 
     def initalise_challenge(self, path):
+        for j in range(5):
+            for i in range(j * 20, (j + 1) * 20):
+                self.coordinates[i][0] = path[int(i / 20)][0]
+                self.coordinates[i][1] = path[int(i / 20)][1]
+                self.coordinates[i][2] = random.randint(0, 359)
+                self.weights[i] = 1 / (20 * 5)
+
+    def update_weight_to_majority(self, coor_x, coor_y):
+        number_of_correct_particles = 0
+        sum_cos = 0
+        sum_sin = 0
         for i in range(NUMBER_OF_PARTICLES):
-            self.coordinates[i][0] = path[int(i / (NUMBER_OF_PARTICLES / 5))][0]
-            self.coordinates[i][1] = path[int(i / (NUMBER_OF_PARTICLES / 5))][1]
-            self.coordinates[i][2] = random.randint(0, 359)
-            self.weights[i] = 1 / NUMBER_OF_PARTICLES
+            if int(self.coordinates[i][0]) == int(coor_x) and int(
+                self.coordinates[i][1]
+            ) == int(coor_y):
+                number_of_correct_particles += 1
+                sum_cos = (
+                    math.cos(self.coordinates[i][2] * math.pi / 180) * self.weights[i]
+                )
+                sum_sin = (
+                    math.sin(self.coordinates[i][2] * math.pi / 180) * self.weights[i]
+                )
+        mean_angle = math.atan2(sum_sin, sum_cos)
+        est_theta = mean_angle * 180 / math.pi
+        for i in range(NUMBER_OF_PARTICLES):
+            if int(self.coordinates[i][0]) != int(coor_x) or int(
+                self.coordinates[i][1]
+            ) != int(coor_y):
+                self.coordinates[i][0] = coor_x
+                self.coordinates[i][1] = coor_y
+                self.coordinates[i][2] = est_theta + random.gauss(0, 5)
 
     def genNewParticlesStraight(self, D):
         """
@@ -66,8 +92,8 @@ class particlesMCL:
         """
 
         mu = 0
-        sigma_e = D * 0.02  # initially 0.05
-        sigma_f = 0.005  # initially 0.05
+        sigma_e = D * 0.01  # initially 0.05
+        sigma_f = 0.002  # initially 0.05
 
         particles = []
 
@@ -100,7 +126,7 @@ class particlesMCL:
         return: None
         """
         mu = 0
-        sigma_g = 0.03 * alpha
+        sigma_g = 0.025 * alpha
 
         particles = []
         for i in range(NUMBER_OF_PARTICLES):  # _ is cooler than i when i is not used

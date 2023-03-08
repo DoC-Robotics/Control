@@ -154,7 +154,7 @@ def get_likelihood_function(estimated_distance, measured_distance, standard_devi
 
     """
 
-    constant = 0.2
+    constant = 0.05
     # z is measured distance by sonar and m is estimated distance based on particle set.
 
     likelihood = (

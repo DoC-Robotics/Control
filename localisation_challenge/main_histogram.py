@@ -18,7 +18,7 @@ right_motor = BP.PORT_C
 ultrasonic_sensor = BP.PORT_2
 BP.set_sensor_type(ultrasonic_sensor, BP.SENSOR_TYPE.NXT_ULTRASONIC)
 
-NUMBER_OF_PARTICLES = 200
+NUMBER_OF_PARTICLES = 100
 NUM_OF_BINS = 10
 rot_scale = 220.0 / 90.0  # per 1 degree #218
 straight_scale = 640.0 / 40.0  # per 1 cm
@@ -203,12 +203,17 @@ def find_initial_position(particles, ls, signature, path):
     #     likelihood.update_particles_weights(particles, distance_measurement, map)
     #     particles = normalising_resampling.normalising_and_resampling(particles)
     #     rotate_rover(24, particles)
-    index = histogram.recognize_location(ls, signature)
+    index, particles = histogram.recognize_location(ls, signature, particles, map)
     # FILL IN: COMPARE ls_read with ls_obs and find the best match
-    distance_measurement = distance_measured()
-    particles.initialise_at(path[index][0], path[index][1])
-    likelihood.update_particles_weights(particles, distance_measurement, map)
-    particles = normalising_resampling.normalising_and_resampling(particles)
+
+    particles.update_weight_to_majority(path[index][0], path[index][1])
+    for i in range(100):
+        print(
+            "Particles After Filtering:",
+            particles.coordinates[i][0],
+            particles.coordinates[i][1],
+            particles.weights[i],
+        )
     return index, particles
 
 
@@ -246,8 +251,12 @@ if __name__ == "__main__":
     while True:
         try:
             x, y, theta = estimated_position_and_orientation(particles)
-            x_goal, y_goal = path[path_index % 5][0], path[path_index % 5][1]
-            print("X_goal, y_goal", x_goal, y_goal)
+            x_goal, y_goal = (
+                path[(path_index + 1) % 5][0],
+                path[(path_index + 1) % 5][1],
+            )
+            
+            print("X_goal, y_goal, Path Index", x_goal, y_goal, (path_index + 1) % 5)
             if abs(x_goal - x) < 5 and abs(y_goal - y) < 5:
                 path_index += 1
                 time.sleep(1)
@@ -266,13 +275,14 @@ if __name__ == "__main__":
                 euclid_distance,
                 straight_scale,
             ) = calc_waypoint([x_goal, y_goal], [x, y, theta])
-            particles = move_rover(rotate_amount, euclid_distance, particles)
-            particles.printParticles(particles.convertNPtoTuples(particles))
-            particles.printPaths(particles, map)
             if abs(x - x_goal) < 5 and abs(y - y_goal) < 5:
                 print("REACHED Point", x_goal, y_goal)
                 time.sleep(3)
                 path_index += 1
+                continue
+            particles = move_rover(rotate_amount, euclid_distance, particles)
+            particles.printParticles(particles.convertNPtoTuples(particles))
+            particles.printPaths(particles, map)
 
         except KeyboardInterrupt:
             BP.reset_all()
